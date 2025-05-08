@@ -1,0 +1,40 @@
+button,
+input,
+textarea,
+select {
+  @apply cursor-pointer;
+}
+
+a {
+  @apply text-foreground;
+}
+
+a:hover {
+  @apply text-primary;
+}
+
+article {
+  &.noto-kufi-arabic {
+    font-family: "Noto Kufi Arabic", sans-serif;
+  }
+  &.rubik {
+    font-family: "Rubik", sans-serif;
+  }
+  &.cairo {
+    font-family: "Cairo", sans-serif;
+  }
+  &.sans {
+    font-family: "Almarai", sans-serif;
+  }
+  &.zain {
+    font-family: "Zain", sans-serif;
+  }
+}
+
+.kolnovel {
+  div:has(.adblock_title),
+  body > div.code-block.code-block-31,
+  wpcp-error-message {
+    display: none;
+  }
+}
