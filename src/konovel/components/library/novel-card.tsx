@@ -329,11 +329,8 @@ export function NovelCard({
           </div>
 
           {/* Continue Reading Button */}
-          <Button variant="default" className="w-full" asChild>
-            <a
-              href={continueReadingLink}
-              className="flex items-center justify-center gap-2"
-            >
+          <Button variant="secondary" className="w-full" asChild>
+            <a href={continueReadingLink}>
               {chapterStats.unFinishedChapter ? (
                 <BookOpen size={16} />
               ) : (

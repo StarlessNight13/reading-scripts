@@ -5,7 +5,7 @@ import { db } from "@/konovel/db";
 import { api } from "@/konovel/lib/api";
 
 // Constants
-const URL_UPDATE_DEBOUNCE_MS = 300;
+const URL_UPDATE_DEBOUNCE_MS = 1000;
 const URL_UPDATE_INTERVAL_MS = 5000;
 const URL_VISIBILITY_THRESHOLD_PERCENT = 30;
 const SCROLL_TRIGGER_PERCENTAGE = 90;
@@ -37,7 +37,20 @@ interface NovelData {
   name: string;
 }
 
-export function useReaderController(initialChapterId: number) {
+export interface useReaderStates {
+  loadedChaptersData: ChapterData[];
+  activeChapterForUIDisplay: ChapterData | null;
+  novel: NovelData | null;
+  isLoadingInitial: boolean;
+  error: string | null;
+  lastChapterRef: React.RefObject<HTMLDivElement>;
+  allChaptersMeta: ApiChapterListItem[];
+  isLoadingNext: boolean;
+  loadNextChapter: () => void;
+  outerListRef: React.RefObject<HTMLDivElement>;
+}
+
+export function useReaderController(initialChapterId: number): useReaderStates {
   // State
   const [loadedChaptersData, setLoadedChaptersData] = useState<ChapterData[]>(
     []
@@ -124,14 +137,15 @@ export function useReaderController(initialChapterId: number) {
       // Update URL if needed
       if (
         window.location.pathname + window.location.search !==
-        initialChapter.apiLink
+        `/reader?chapterId=${initialChapter.id}`
       ) {
         history.replaceState(
           { chapterUrl: initialChapter.apiLink },
           "",
-          initialChapter.apiLink
+          `/reader?chapterId=${initialChapter.id}`
         );
       }
+      document.title = initialChapter.title;
 
       // Step 2: Load novel and chapter list data
       try {
@@ -245,7 +259,7 @@ export function useReaderController(initialChapterId: number) {
     const getVisibleChapters = (): HTMLDivElement[] => {
       return Array.from(
         outerListRef.current?.querySelectorAll<HTMLDivElement>(
-          ".chapter-container[data-chapter-id]"
+          ".chapter-container"
         ) || []
       );
     };
@@ -311,11 +325,19 @@ export function useReaderController(initialChapterId: number) {
       if (!found) return;
 
       const { data: newActive } = found;
-      const newUrl = newActive.apiLink;
+      const newUrl = newActive.id;
 
       // Update URL if needed
-      if (window.location.pathname + window.location.search !== newUrl) {
-        history.replaceState({ chapterUrl: newUrl }, "", newUrl);
+      if (
+        window.location.pathname + window.location.search !==
+        `/reader?chapterId=${newUrl}`
+      ) {
+        history.replaceState(
+          { chapterUrl: newUrl },
+          "",
+          `/reader?chapterId=${newUrl}`
+        );
+        document.title = newActive.title;
       }
 
       // Update active chapter state

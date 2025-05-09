@@ -1,8 +1,8 @@
-import { Button } from "@/components/ui/button";
 import { db } from "@/konovel/db";
 import { api } from "@/konovel/lib/api";
 import { Book, Minus, Plus } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import "@/konovel/novel-page.css";
 
 // Type definitions
 interface NovelData {
@@ -156,7 +156,7 @@ const NovelLibraryButtons: React.FC<NovelLibraryButtonsProps> = ({
   const { isInLibrary, handleLibraryAction } = useNovelLibrary(novelData);
 
   return (
-    <div className="flex gap-2">
+    <div className="library-buttons">
       {LIBRARY_BUTTONS_CONFIG.map((buttonConfig) => {
         const shouldDisplay =
           (isInLibrary && buttonConfig.action === LibraryAction.REMOVE) ||
@@ -167,13 +167,14 @@ const NovelLibraryButtons: React.FC<NovelLibraryButtonsProps> = ({
         }
 
         return (
-          <Button
+          <button
             key={buttonConfig.id}
             onClick={() => handleLibraryAction(buttonConfig.action)}
+            className="button-base primary"
           >
             <buttonConfig.icon className="mr-2 h-4 w-4" />
             {buttonConfig.text}
-          </Button>
+          </button>
         );
       })}
     </div>

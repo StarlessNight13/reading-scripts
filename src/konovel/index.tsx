@@ -7,17 +7,19 @@ import { GM_addStyle } from "$";
 import { LibraryManager } from "@/konovel/page/library";
 import ChapterReader from "@/konovel/page/readerPage";
 import ErrorPage from "@/konovel/components/error-page";
+import NovelPage from "./page/novel";
 
 export default function (tailwindcss: string) {
   console.clear();
   console.log("kolnovel Initial");
+  document.body.setAttribute("host", "kolnovel");
 
   always();
   const currentPage = findCurrentPage();
 
   if (currentPage === "user-library") {
-    document.body.className = "libraryPage";
-    document.head.querySelectorAll("#style-css").forEach((e) => e.remove());
+    document.body.classList.add("libraryPage");
+    removeBaseStyles();
     GM_addStyle(tailwindcss);
 
     createRoot(
@@ -31,9 +33,8 @@ export default function (tailwindcss: string) {
       <LibraryManager />
     );
   } else if (currentPage === "reader") {
-    document.body.className = "readerPage";
-    document.head.querySelectorAll("#style-css").forEach((e) => e.remove());
-    document.head.querySelector("head > style:nth-child(73)")?.remove();
+    document.body.classList.add("readerPage");
+    removeBaseStyles();
     GM_addStyle(tailwindcss);
     const chapterIdString = urlSearchParams.getSpecific("chapterId");
     if (!chapterIdString) {
@@ -78,6 +79,21 @@ export default function (tailwindcss: string) {
     );
   } else if (currentPage === "page") {
     document.body.classList.add("novelPage");
+    createRoot(
+      (() => {
+        const containter =
+          document.querySelector<HTMLDivElement>(".serbookmark");
+        if (!containter) {
+          const app = document.createElement("div");
+          app.id = "chapter-reader";
+          document.body.innerHTML = "";
+          document.body.append(app);
+          return app;
+        }
+        return containter;
+      })(),
+      <NovelPage />
+    );
   } else if (currentPage === "chapter") {
     document.body.classList.add("chapterPage");
     const article = document.querySelector("article");
@@ -144,6 +160,35 @@ function findCurrentPage() {
   } else {
     return "home";
   }
+}
+
+function removeBaseStyles() {
+  let stylesCount = 0;
+  document.head.querySelectorAll("#style-css").forEach((e) => {
+    e.remove();
+    stylesCount++;
+  });
+  document.head.querySelectorAll("#wp-custom-css").forEach((e) => {
+    e.remove();
+    stylesCount++;
+  });
+  document.head
+    .querySelectorAll("head > style:not([type='text/css'])")
+    .forEach((e) => {
+      e.remove();
+      stylesCount++;
+    });
+  document.head.querySelectorAll("head > style").forEach((e) => {
+    const content = e.textContent;
+    if (!content) {
+      return;
+    }
+    if (!content.includes("KEEP_STYLE")) {
+      e.remove();
+      stylesCount++;
+    }
+  });
+  console.log("Removed", stylesCount, "styles");
 }
 
 function createRoot(container: HTMLElement, page: React.ReactNode) {

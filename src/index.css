@@ -1,18 +1,3 @@
-button,
-input,
-textarea,
-select {
-  @apply cursor-pointer;
-}
-
-a {
-  @apply text-foreground;
-}
-
-a:hover {
-  @apply text-primary;
-}
-
 article {
   &.noto-kufi-arabic {
     font-family: "Noto Kufi Arabic", sans-serif;
@@ -31,10 +16,10 @@ article {
   }
 }
 
-.kolnovel {
+body[host="kolnovel"] {
   div:has(.adblock_title),
-  body > div.code-block.code-block-31,
-  wpcp-error-message {
+  div.code-block.code-block-31,
+  .wpcp-error-message {
     display: none;
   }
 }
