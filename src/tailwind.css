@@ -4,9 +4,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-body > div.code-block.code-block-31,
-#wpcp-error-message {
-  display: none;
+.KEEP_STYLE {
 }
 
 @theme {
@@ -91,29 +89,31 @@ body > div.code-block.code-block-31,
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  --background: hsl(240, 21%, 15%);
+  --foreground: hsl(226, 64%, 88%);
+  --muted: hsl(240, 12%, 19%);
+  --muted-foreground: hsl(240, 12%, 69%);
+  --popover: hsl(240, 21%, 12%);
+  --popover-foreground: hsl(226, 64%, 98%);
+  --card: hsl(240, 21%, 13%);
+  --card-foreground: hsl(226, 64%, 93%);
+  --border: hsl(240, 11%, 20%);
+  --input: hsl(240, 11%, 23%);
+  --primary: hsl(267, 84%, 81%);
+  --primary-foreground: hsl(267, 84%, 21%);
+  --secondary: hsl(267, 30%, 25%);
+  --secondary-foreground: hsl(267, 30%, 85%);
+  --accent: hsl(240, 21%, 30%);
+  --accent-foreground: hsl(240, 21%, 90%);
+  --destructive: hsl(8, 96%, 56%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --ring: hsl(267, 84%, 81%);
+  --chart-1: hsl(267, 84%, 81%);
+  --chart-2: hsl(267, 30%, 25%);
+  --chart-3: hsl(240, 21%, 30%);
+  --chart-4: hsl(267, 30%, 28%);
+  --chart-5: hsl(267, 87%, 81%);
+
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
@@ -131,4 +131,23 @@ body > div.code-block.code-block-31,
   body {
     @apply bg-background text-foreground;
   }
+}
+button,
+input,
+textarea,
+select {
+  cursor: pointer;
+}
+
+a,
+.darkmode a {
+  color: var(--primary);
+  text-underline-offset: 0.25rem;
+  text-decoration: none;
+}
+
+a:hover,
+.darkmode a:hover {
+  color: var(--primary);
+  text-decoration: underline;
 }

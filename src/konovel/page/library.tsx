@@ -105,6 +105,7 @@ export function LibraryManager() {
   // Initial load on component mount
   useEffect(() => {
     loadAndSetNovels();
+    document.title = "User Library";
   }, [loadAndSetNovels]); // Depend on the memoized function
   // Get default active tab (first non-empty category)
   // Get count of novels in each category
@@ -363,7 +364,9 @@ export function LibraryManager() {
             <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
               <Button
                 onClick={handleUpdateNovels}
-                disabled={isUpdating || isLoading}
+                disabled={
+                  isUpdating || isLoading || getNovelCount(activeTab) === 0
+                }
                 variant="secondary"
                 className="relative overflow-hidden group"
               >
