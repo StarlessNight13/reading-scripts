@@ -1,0 +1,299 @@
+import { DiscussionEmbed } from "disqus-react";
+import { MessageSquare, RefreshCcw } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import { Virtualized } from "@/components/ui/virtualized";
+import { useReaderController } from "./components/chapter/readerController";
+import SettingsDialog from "./components/chapter/settingsDialog";
+import ChapterContent from "./components/chapter/ChapterContent";
+import { ChapterSelector } from "./components/chapter/chapterSelector";
+
+
+type ReaderSettings = {
+  fontSize: number;
+  fontFamily: string;
+  textGap: number;
+  textWidth: number;
+  textAlign: "left" | "center" | "right";
+};
+
+type ChapterReaderProps = {
+  initialChapterId: number;
+};
+
+// Custom hook for managing reader settings
+function useReaderSettings(): {
+  settings: ReaderSettings;
+  updateSetting: <K extends keyof ReaderSettings>(
+    key: K,
+    value: ReaderSettings[K]
+  ) => void;
+} {
+  const [settings, setSettings] = useState<ReaderSettings>({
+    fontSize: 16,
+    fontFamily: "serif",
+    textGap: 0,
+    textWidth: 100,
+    textAlign: "left",
+  });
+
+  useEffect(() => {
+    const storedSettings: ReaderSettings = {
+      fontSize: Number(localStorage.getItem("fontSize")) || 16,
+      fontFamily: localStorage.getItem("fontFamily") || "serif",
+      textGap: Number(localStorage.getItem("textGap")) || 0,
+      textWidth: Number(localStorage.getItem("textWidth")) || 100, // Default 100 if 0
+      textAlign:
+        (localStorage.getItem("textAlign") as ReaderSettings["textAlign"]) ||
+        "left",
+    };
+    setSettings(storedSettings);
+  }, []);
+
+  const updateSetting = useCallback(
+    <K extends keyof ReaderSettings>(key: K, value: ReaderSettings[K]) => {
+      setSettings((prev) => {
+        const newSettings = { ...prev, [key]: value };
+        localStorage.setItem(key, String(value));
+        return newSettings;
+      });
+    },
+    []
+  );
+
+  return { settings, updateSetting };
+}
+
+export default function ChapterReader({
+  initialChapterId,
+}: ChapterReaderProps) {
+  const { settings, updateSetting } = useReaderSettings();
+  const {
+    loadedChaptersData,
+    activeChapterForUIDisplay,
+    novel,
+    isLoadingInitial,
+    error,
+    lastChapterRef,
+    allChaptersMeta,
+  } = useReaderController(initialChapterId);
+  // Component State
+
+  // Conditional Renders for Loading/Error states
+  if (isLoadingInitial && loadedChaptersData.length === 0) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          <p className="mt-3 text-lg">Loading chapter...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && loadedChaptersData.length === 0) {
+    return (
+      <Card className="mx-auto my-8 max-w-lg">
+        <CardHeader>
+          <CardTitle className="text-center">Chapter Not Found</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-center text-gray-500">
+            {error || "Please check the ID and try again."}
+          </p>
+        </CardContent>
+        <CardFooter className="flex flex-col justify-center gap-2 sm:flex-row">
+          <Button variant="outline" asChild>
+            <a href="/">Back to Home</a>
+          </Button>
+          <Button variant="outline" onClick={() => window.history.back()}>
+            Go Back
+          </Button>
+        </CardFooter>
+      </Card>
+    );
+  }
+
+  if (!isLoadingInitial && loadedChaptersData.length === 0 && !error) {
+    return (
+      <Card className="mx-auto my-8 max-w-lg">
+        <CardHeader>
+          <CardTitle className="text-center">No Chapter Data</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-center text-gray-500">
+            Could not load any chapter data.
+          </p>
+        </CardContent>
+        <CardFooter className="flex flex-col justify-center gap-2 sm:flex-row">
+          <Button variant="outline" asChild>
+            <a href="/">Back to Home</a>
+          </Button>
+        </CardFooter>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="flex min-h-screen flex-col font-rubik overflow-x-hidden">
+      <header className="fixed w-full top-0 z-50 flex items-center justify-between border-b bg-background/80 p-4 backdrop-blur-sm">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => window.location.reload()}
+        >
+          <RefreshCcw className="h-5 w-5" />
+        </Button>
+
+        {/* Display title of the chapter most in view */}
+        {activeChapterForUIDisplay ? (
+          <Button variant="link" asChild className="truncate">
+            <a
+              href={activeChapterForUIDisplay.url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {novel?.name || "Novel"}: {activeChapterForUIDisplay.title}
+            </a>
+          </Button>
+        ) : (
+          <div className="w-1/3"></div>
+        )}
+
+        <SettingsDialog
+          fontSize={settings.fontSize}
+          setFontSize={(val) => updateSetting("fontSize", val)}
+          fontFamily={settings.fontFamily}
+          setFontFamily={(val) => updateSetting("fontFamily", val)}
+          textGap={settings.textGap}
+          setTextGap={(val) => updateSetting("textGap", val)}
+          textWidth={settings.textWidth}
+          setTextWidth={(val) => updateSetting("textWidth", val)}
+          textAlign={settings.textAlign}
+          setTextAlign={(val) => updateSetting("textAlign", val)}
+        />
+      </header>
+
+      <main className="flex flex-col flex-grow mt-28 ">
+        <Virtualized>
+          {loadedChaptersData.map((chapter, index) => (
+            <div
+              key={`chapter-${chapter.id}`}
+              className="chapter-container flex flex-col group mb-20 h-fit"
+              data-url={`https://kolbook.xyz/reader?chapterId=${chapter.id}`} // Or use chapter.url
+              data-read={chapter.read}
+              id={`chapter-${chapter.id}`} // For direct navigation if needed
+              ref={
+                index === loadedChaptersData.length - 1 ? lastChapterRef : null
+              }
+            >
+              <div className="flex flex-col gap-4 justify-center items-center my-8 pt-8">
+                {" "}
+                {/* Added pt-8 for spacing from header */}
+                <h1
+                  className="text-3xl md:text-5xl font-bold text-center data-[read='true']:text-primary px-4"
+                  data-read={chapter.read}
+                >
+                  {chapter.title}
+                </h1>
+                <span className="text-sm text-gray-500 dark:text-gray-400 text-center">
+                  {chapter.index}
+                </span>
+              </div>
+
+              <ChapterContent
+                fontSize={settings.fontSize}
+                fontFamily={settings.fontFamily}
+                textGap={settings.textGap}
+                textWidth={settings.textWidth}
+                textAlign={settings.textAlign}
+                chapterData={chapter}
+              />
+
+              {index < loadedChaptersData.length - 1 && (
+                <hr className="my-12 border-t-2 w-1/2 mx-auto" />
+              )}
+            </div>
+          ))}
+        </Virtualized>
+      </main>
+      <footer className="fixed bottom-0 w-full z-30 flex items-center justify-start gap-6 border-t bg-background/80 p-4 backdrop-blur-sm">
+        <ChapterSelector
+          items={allChaptersMeta.map((chapter) => ({
+            label: chapter.title,
+            value: chapter.id.toString(),
+          }))}
+          value={activeChapterForUIDisplay?.id.toString() || ""}
+          onChange={(value) => {
+            const chapterId = Number(value);
+            const chapterURL = `https://kolbook.xyz/reader?chapterId=${chapterId}`;
+            window.location.href = chapterURL;
+          }}
+        />
+
+        <Badge
+          variant={allChaptersMeta.length > 100 ? "destructive" : "default"}
+        >
+          {allChaptersMeta.length} فصلا
+        </Badge>
+      </footer>
+      {/* Comments Drawer - uses activeChapterForUIDisplay */}
+      <Drawer>
+        <DrawerTrigger asChild>
+          <Button
+            size="icon"
+            className="fixed bottom-5 left-5 h-12 w-12 rounded-full shadow-md z-50"
+            aria-label="Comments"
+          >
+            <MessageSquare className="h-5 w-5" />
+            <span className="sr-only">Comments</span>
+          </Button>
+        </DrawerTrigger>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>
+              {activeChapterForUIDisplay?.title ?? "Comments"}
+            </DrawerTitle>
+            <DrawerDescription className="sr-only">
+              Comments section
+            </DrawerDescription>
+          </DrawerHeader>
+          {activeChapterForUIDisplay && (
+            <div className="flex flex-col px-6 pb-6">
+              <DiscussionEmbed
+                shortname="kolnovel-com" // Replace with your Disqus shortname
+                config={{
+                  url: activeChapterForUIDisplay.url, // Use permalink for Disqus
+                  identifier: activeChapterForUIDisplay.id.toString(),
+                  title: activeChapterForUIDisplay.title,
+                }}
+              />
+            </div>
+          )}
+          {!activeChapterForUIDisplay && (
+            <p className="text-center py-4">
+              Scroll to a chapter to view comments.
+            </p>
+          )}
+        </DrawerContent>
+      </Drawer>
+    </div>
+  );
+}
