@@ -1,8 +1,3 @@
-import { DiscussionEmbed } from "disqus-react";
-import { MessageSquare, RefreshCcw } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,12 +14,17 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Virtualized } from "@/components/ui/virtualized";
-import { useReaderController } from "./components/chapter/readerController";
-import SettingsDialog from "./components/chapter/settingsDialog";
-import ChapterContent from "./components/chapter/ChapterContent";
-import { ChapterSelector } from "./components/chapter/chapterSelector";
-
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { DiscussionEmbed } from "disqus-react";
+import { BotOffIcon, MessageSquare, RefreshCcw } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import ChapterContent from "./components/ChapterContent";
+import {
+  useReaderController,
+  useReaderStates,
+} from "./components/readerController";
+import SettingsDialog from "./components/settingsDialog";
+import { ReaderSidebar } from "./components/reader-sidebar";
 
 type ReaderSettings = {
   fontSize: number;
@@ -34,8 +34,31 @@ type ReaderSettings = {
   textAlign: "left" | "center" | "right";
 };
 
-type ChapterReaderProps = {
-  initialChapterId: number;
+interface ChapterInfo {
+  title: string;
+  link: string;
+  chapterIndex: number;
+}
+
+interface VolumeInfo {
+  id: number;
+  title: string;
+  chapters: ChapterInfo[];
+  selectedChapterIndex: number;
+}
+type ReaderLayoutProps = {
+  selectVolumeId: number;
+  volumes: VolumeInfo[];
+  initalChapterData: {
+    content: string;
+    id: number;
+  };
+  novel: {
+    name: string;
+    link: string;
+    id: number;
+    cover: string | undefined;
+  };
 };
 
 // Custom hook for managing reader settings
@@ -81,20 +104,16 @@ function useReaderSettings(): {
   return { settings, updateSetting };
 }
 
-export default function ChapterReader({
-  initialChapterId,
-}: ChapterReaderProps) {
+function ChapterReader({
+  loadedChaptersData,
+  activeChapterForUIDisplay,
+  novel,
+  isLoadingInitial,
+  error,
+  lastChapterRef,
+  outerListRef,
+}: useReaderStates) {
   const { settings, updateSetting } = useReaderSettings();
-  const {
-    loadedChaptersData,
-    activeChapterForUIDisplay,
-    novel,
-    isLoadingInitial,
-    error,
-    lastChapterRef,
-    allChaptersMeta,
-  } = useReaderController(initialChapterId);
-  // Component State
 
   // Conditional Renders for Loading/Error states
   if (isLoadingInitial && loadedChaptersData.length === 0) {
@@ -152,8 +171,8 @@ export default function ChapterReader({
   }
 
   return (
-    <div className="flex min-h-screen flex-col font-rubik overflow-x-hidden">
-      <header className="fixed w-full top-0 z-50 flex items-center justify-between border-b bg-background/80 p-4 backdrop-blur-sm">
+    <>
+      <header className="flex sticky top-0 bg-background h-16 shrink-0 items-center justify-between gap-2 border-b p-4 font-rubik">
         <Button
           variant="outline"
           size="icon"
@@ -166,7 +185,7 @@ export default function ChapterReader({
         {activeChapterForUIDisplay ? (
           <Button variant="link" asChild className="truncate">
             <a
-              href={activeChapterForUIDisplay.url}
+              href={activeChapterForUIDisplay.link}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -190,82 +209,74 @@ export default function ChapterReader({
           setTextAlign={(val) => updateSetting("textAlign", val)}
         />
       </header>
-
-      <main className="flex flex-col flex-grow mt-28 ">
-        <Virtualized>
-          {loadedChaptersData.map((chapter, index) => (
-            <div
-              key={`chapter-${chapter.id}`}
-              className="chapter-container flex flex-col group mb-20 h-fit"
-              data-url={`https://kolbook.xyz/reader?chapterId=${chapter.id}`} // Or use chapter.url
-              data-read={chapter.read}
-              id={`chapter-${chapter.id}`} // For direct navigation if needed
-              ref={
-                index === loadedChaptersData.length - 1 ? lastChapterRef : null
-              }
-            >
-              <div className="flex flex-col gap-4 justify-center items-center my-8 pt-8">
-                {" "}
-                {/* Added pt-8 for spacing from header */}
-                <h1
-                  className="text-3xl md:text-5xl font-bold text-center data-[read='true']:text-primary px-4"
-                  data-read={chapter.read}
-                >
-                  {chapter.title}
-                </h1>
-                <span className="text-sm text-gray-500 dark:text-gray-400 text-center">
-                  {chapter.index}
-                </span>
-              </div>
-
-              <ChapterContent
-                fontSize={settings.fontSize}
-                fontFamily={settings.fontFamily}
-                textGap={settings.textGap}
-                textWidth={settings.textWidth}
-                textAlign={settings.textAlign}
-                chapterData={chapter}
-              />
-
-              {index < loadedChaptersData.length - 1 && (
-                <hr className="my-12 border-t-2 w-1/2 mx-auto" />
-              )}
+      <main className="flex flex-col flex-grow mt-28" ref={outerListRef}>
+        {loadedChaptersData.map((chapter, index) => (
+          <div
+            key={`chapter-${chapter.id}-${chapter.link}-${chapter.title}`}
+            className="chapter-container flex flex-col group mb-20 h-fit"
+            data-url={`https://kolbook.xyz/reader?chapterId=${chapter.id}`} // Or use chapter.url
+            data-read={chapter.read}
+            data-chapter-id={chapter.id}
+            id={`chapter-${chapter.id}`} // For direct navigation if needed
+            ref={
+              index === loadedChaptersData.length - 1 ? lastChapterRef : null
+            }
+          >
+            <div className="flex flex-col gap-4 justify-center items-center my-8 pt-8">
+              <a href={chapter.link} target="_blank" rel="noopener noreferrer">
+                {chapter.title}
+              </a>
+              {/* Added pt-8 for spacing from header */}
+              <h1
+                className="text-3xl md:text-5xl font-bold text-center data-[read='true']:text-primary px-4"
+                data-read={chapter.read}
+              >
+                {chapter.title}
+              </h1>
+              <span className="text-sm text-gray-500 dark:text-gray-400 text-center">
+                {chapter.chapterIndex}
+              </span>
             </div>
-          ))}
-        </Virtualized>
-      </main>
-      <footer className="fixed bottom-0 w-full z-30 flex items-center justify-start gap-6 border-t bg-background/80 p-4 backdrop-blur-sm">
-        <ChapterSelector
-          items={allChaptersMeta.map((chapter) => ({
-            label: chapter.title,
-            value: chapter.id.toString(),
-          }))}
-          value={activeChapterForUIDisplay?.id.toString() || ""}
-          onChange={(value) => {
-            const chapterId = Number(value);
-            const chapterURL = `https://kolbook.xyz/reader?chapterId=${chapterId}`;
-            window.location.href = chapterURL;
-          }}
-        />
 
-        <Badge
-          variant={allChaptersMeta.length > 100 ? "destructive" : "default"}
-        >
-          {allChaptersMeta.length} فصلا
-        </Badge>
-      </footer>
-      {/* Comments Drawer - uses activeChapterForUIDisplay */}
+            <ChapterContent
+              fontSize={settings.fontSize}
+              fontFamily={settings.fontFamily}
+              textGap={settings.textGap}
+              textWidth={settings.textWidth}
+              textAlign={settings.textAlign}
+              chapterData={chapter}
+            />
+
+            {index < loadedChaptersData.length - 1 && (
+              <hr className="my-12 border-t-2 w-1/2 mx-auto" />
+            )}
+          </div>
+        ))}
+      </main>
       <Drawer>
-        <DrawerTrigger asChild>
+        <footer className="fixed bottom-5 left-5 z-30 flex gap-2 flex-col">
+          <Button asChild size="icon" variant="default">
+            <SidebarTrigger />
+          </Button>
           <Button
             size="icon"
-            className="fixed bottom-5 left-5 h-12 w-12 rounded-full shadow-md z-50"
-            aria-label="Comments"
+            variant="destructive"
+            onClick={() => {
+              localStorage.setItem("readerEnabled", "false");
+              window.location.reload();
+            }}
           >
-            <MessageSquare className="h-5 w-5" />
-            <span className="sr-only">Comments</span>
+            <BotOffIcon />
           </Button>
-        </DrawerTrigger>
+
+          {/* Comments Drawer - uses activeChapterForUIDisplay */}
+          <DrawerTrigger asChild>
+            <Button size="icon" aria-label="Comments">
+              <MessageSquare className="h-5 w-5" />
+              <span className="sr-only">Comments</span>
+            </Button>
+          </DrawerTrigger>
+        </footer>
         <DrawerContent>
           <DrawerHeader>
             <DrawerTitle>
@@ -280,7 +291,7 @@ export default function ChapterReader({
               <DiscussionEmbed
                 shortname="kolnovel-com" // Replace with your Disqus shortname
                 config={{
-                  url: activeChapterForUIDisplay.url, // Use permalink for Disqus
+                  url: activeChapterForUIDisplay.link, // Use permalink for Disqus
                   identifier: activeChapterForUIDisplay.id.toString(),
                   title: activeChapterForUIDisplay.title,
                 }}
@@ -294,6 +305,50 @@ export default function ChapterReader({
           )}
         </DrawerContent>
       </Drawer>
-    </div>
+    </>
+  );
+}
+export default function Layout({
+  selectVolumeId,
+  volumes,
+  initalChapterData,
+  novel,
+}: ReaderLayoutProps) {
+  const {
+    loadedChaptersData,
+    activeChapterForUIDisplay,
+    isLoadingInitial,
+    error,
+    lastChapterRef,
+    isLoadingNext,
+    outerListRef,
+    chapters,
+  } = useReaderController({
+    volumes,
+    selectVolumeId,
+    initalChapterData,
+    novel,
+  });
+  return (
+    <SidebarProvider defaultOpen={false}>
+      <ReaderSidebar
+        volumes={volumes ?? []}
+        currentVolume={selectVolumeId ?? 0}
+        currentChapter={activeChapterForUIDisplay?.chapterIndex ?? 0}
+      />
+      <main>
+        <ChapterReader
+          loadedChaptersData={loadedChaptersData}
+          activeChapterForUIDisplay={activeChapterForUIDisplay}
+          novel={novel}
+          isLoadingInitial={isLoadingInitial}
+          error={error}
+          lastChapterRef={lastChapterRef}
+          allChaptersMeta={chapters ?? []}
+          isLoadingNext={isLoadingNext}
+          outerListRef={outerListRef}
+        />
+      </main>
+    </SidebarProvider>
   );
 }

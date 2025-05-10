@@ -1,6 +1,4 @@
-
-
-function scrapData(doc: Document) {
+export default function extractChapterData(doc: Document) {
     const bookmarkButton = doc.querySelector<HTMLAnchorElement>(
         'a.wp-manga-action-button[data-action="bookmark"]'
     );
@@ -19,19 +17,22 @@ function scrapData(doc: Document) {
 
     if (content.includes("Error: Chapter content not found.")) {
         console.warn("Could not extract chapter content from expected selectors.");
-        return null;
     }
 
-    return { content, id };
-}
+    const scriptThatHasTheNovelCover = doc.querySelector<HTMLScriptElement>(
+        `[type="application/ld+json"]`
+    )?.textContent;
+    const json = JSON.parse(scriptThatHasTheNovelCover ?? "");
+    const novelCover = json.image.url as string | undefined;
+    const novelElement = document.querySelector<HTMLAnchorElement>(
+        "#manga-reading-nav-head > div > div.entry-header_wrap > div > div.c-breadcrumb > ol > li:nth-child(2) > a"
+    );
+    const novel = {
+        name: novelElement?.textContent ?? "Novel",
+        link: novelElement?.href ?? "",
+        id: Number(bookmarkButton?.getAttribute("data-post") ?? 0),
+        cover: novelCover,
+    };
 
-
-
-export const api = {
-    getChapter: async (chapterUrl: string) => {
-        const response = await fetch(chapterUrl);
-        const data = await response.text();
-        const doc = new DOMParser().parseFromString(data, "text/html");
-        return scrapData(doc);
-    },
+    return { content, id, novel };
 }

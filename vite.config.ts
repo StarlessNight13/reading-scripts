@@ -19,7 +19,10 @@ export default defineConfig({
       userscript: {
         icon: "https://vitejs.dev/logo.svg",
         namespace: "npm/vite-plugin-monkey",
-        match: ["https://kolbook.xyz/*"],
+        match: ["https://kolbook.xyz/*", "https://cenele.com/*"],
+      },
+      server: {
+        open: false
       },
       build: {
         externalGlobals: {

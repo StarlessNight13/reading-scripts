@@ -138,16 +138,3 @@ textarea,
 select {
   cursor: pointer;
 }
-
-a,
-.darkmode a {
-  color: var(--primary);
-  text-underline-offset: 0.25rem;
-  text-decoration: none;
-}
-
-a:hover,
-.darkmode a:hover {
-  color: var(--primary);
-  text-decoration: underline;
-}

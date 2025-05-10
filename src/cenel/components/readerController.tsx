@@ -11,50 +11,87 @@ const SCROLL_TRIGGER_PERCENTAGE = 90;
 const SCROLL_DEBOUNCE_MS = 200;
 
 // Types
-interface ApiChapterListItem {
-  id?: number;
+
+interface NovelData {
+  id: number;
+  name: string;
+  link: string;
+  cover: string | undefined;
+}
+
+export interface useReaderStates {
+  loadedChaptersData: ChapterData[];
+  activeChapterForUIDisplay: ChapterData | null;
+  novel: NovelData | null;
+  isLoadingInitial: boolean;
+  error: string | null;
+  lastChapterRef: React.RefObject<HTMLDivElement>;
+  allChaptersMeta: ChapterInfo[];
+  isLoadingNext: boolean;
+  outerListRef: React.RefObject<HTMLDivElement>;
+}
+
+interface ChapterInfo {
   title: string;
   link: string;
   chapterIndex: number;
 }
+interface ChapterData extends ChapterInfo {
+  id: number;
+  content: string;
+  read: boolean;
+}
 
-interface ChapterData {
+interface VolumeInfo {
   id: number;
   title: string;
-  url: string;
-  apiLink: string;
-  index: string;
-  read: boolean;
-  content: string;
+  chapters: ChapterInfo[];
+  selectedChapterIndex: number;
 }
 
-interface NovelData {
-  id: number;
-  slug: string;
-  link: string;
-  count: number;
-  name: string;
-}
-
-export function useReaderController(
-  allChaptersMeta: ApiChapterListItem[],
-  initalChapterIndex: number
-) {
+type ChapterReaderProps = {
+  selectVolumeId: number;
+  volumes: VolumeInfo[];
+  initalChapterData: {
+    content: string;
+    id: number;
+  };
+  novel: {
+    name: string;
+    link: string;
+    id: number;
+    cover: string | undefined;
+  };
+};
+export function useReaderController({
+  volumes,
+  selectVolumeId,
+  initalChapterData,
+  novel,
+}: ChapterReaderProps) {
   // State
   const [loadedChaptersData, setLoadedChaptersData] = useState<ChapterData[]>(
     []
   );
   const [activeChapterForUIDisplay, setActiveChapterForUIDisplay] =
     useState<ChapterData | null>(null);
-  const [novel, setNovel] = useState<NovelData | null>(null);
   const [lastLoadedTocIndex, setLastLoadedTocIndex] = useState<number>(0);
   const [isLoadingInitial, setIsLoadingInitial] = useState<boolean>(true);
   const [isLoadingNext, setIsLoadingNext] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentVolumeId, setCurrentVolumeId] =
+    useState<number>(selectVolumeId);
 
   // Refs
   const outerListRef = useRef<HTMLDivElement>(null);
   const lastChapterRef = useRef<HTMLDivElement>(null);
+
+  // useMemo
+
+  const currentVolume = useMemo(
+    () => volumes.find((v) => v.id === currentVolumeId),
+    [volumes, currentVolumeId]
+  );
 
   // --- CHAPTER DATA FETCHING ---
 
@@ -62,34 +99,36 @@ export function useReaderController(
    * Fetches a single chapter's data from the API
    */
   const fetchChapterData = useCallback(
-    async (
-      chapterUrlToFetch: string,
-      chapterMeta?: ApiChapterListItem
-    ): Promise<ChapterData | null> => {
+    async (chapterToFetch: ChapterInfo): Promise<ChapterData | null> => {
       try {
-        const data = await api.getChapter(chapterUrlToFetch);
+        const data = await api.getChapter(chapterToFetch.link);
         if (!data) {
-          toast.error(`Chapter (ID: ${chapterUrlToFetch}) not found.`);
+          toast.error(`Chapter (LINK: ${chapterToFetch.link}) not found.`);
           return null;
         }
 
         const chapterExistsInDb = await db.chapters.get({ id: data.id });
 
+        const novelExistsInDb = await db.novels.get({ id: novel.id });
+        if (!novelExistsInDb) {
+          await db.novels.add({
+            id: novel.id,
+            name: novel.name,
+            link: novel.link,
+            status: "none",
+            cover: novel.cover ?? "",
+          });
+        }
+
         return {
-          id: data.id,
-          title:
-            chapterMeta?.title ??
-            data.meta_box?.ero_title ??
-            data.title.rendered,
-          url: data.link, // Permalink
-          apiLink: `/reader?chapterId=${data.id}`, // For history state
-          index: data.title.rendered,
-          read: !!chapterExistsInDb,
-          content: data.content.rendered,
+          ...chapterToFetch,
+          id: data.id, // Use the chapter ID from the API
+          content: data.content,
+          read: !!chapterExistsInDb, // Mark as read if it exists in the DB
         };
       } catch (err) {
         console.error("Failed to fetch chapter data:", err);
-        toast.error(`Failed to load chapter (ID: ${chapterUrlToFetch}).`);
+        toast.error(`Failed to load chapter (ID: ${chapterToFetch.link}).`);
         return null;
       }
     },
@@ -108,7 +147,26 @@ export function useReaderController(
 
     const loadInitial = async () => {
       // Step 1: Load the initial chapter
-      const initialChapter = await fetchChapterData(initialChapterId);
+      if (!currentVolume) return;
+      const currentChapter =
+        currentVolume.chapters[currentVolume.selectedChapterIndex];
+
+      if (!currentChapter) {
+        setError("Initial chapter not found or failed to load.");
+        setIsLoadingInitial(false);
+        return;
+      }
+
+      const chapterExistsInDb = await db.chapters.get({
+        id: initalChapterData.id,
+      });
+
+      const initialChapter = {
+        ...currentChapter,
+        id: initalChapterData.id,
+        content: initalChapterData.content,
+        read: !!chapterExistsInDb,
+      };
       if (!isMounted) return;
 
       if (!initialChapter) {
@@ -121,46 +179,16 @@ export function useReaderController(
       setActiveChapterForUIDisplay(initialChapter);
 
       // Update URL if needed
-      if (
-        window.location.pathname + window.location.search !==
-        initialChapter.apiLink
-      ) {
+      if (window.location.href !== initialChapter.link) {
         history.replaceState(
-          { chapterUrl: initialChapter.apiLink },
+          { chapterUrl: initialChapter.link },
           "",
-          initialChapter.apiLink
+          initialChapter.link
         );
       }
 
       // Step 2: Load novel and chapter list data
-      try {
-        const novelData = await api.getNovelByChapterId(initialChapterId);
-        if (!isMounted || !novelData) return;
-        setNovel(novelData);
-
-        const chaptersResult = await api.getChaptersList(
-          novelData.slug,
-          initialChapterId
-        );
-        if (!isMounted || !chaptersResult) return;
-
-        setAllChaptersMeta(chaptersResult.data);
-
-        // Find the index of the loaded chapter in the TOC
-        const tocIndex = chaptersResult.data.findIndex(
-          (c) => c.id === initialChapterId
-        );
-        setLastLoadedTocIndex(tocIndex !== -1 ? tocIndex : 0);
-
-        toast.success("Successfully loaded novel data.");
-      } catch (novelError) {
-        console.error("Failed to load novel details:", novelError);
-        toast.error("Failed to load novel details.", {
-          description: "Chapter list might be unavailable.",
-        });
-      } finally {
-        if (isMounted) setIsLoadingInitial(false);
-      }
+      setIsLoadingInitial(false);
     };
 
     loadInitial();
@@ -168,7 +196,7 @@ export function useReaderController(
     return () => {
       isMounted = false;
     };
-  }, [initialChapterId, fetchChapterData]);
+  }, [fetchChapterData]);
 
   // --- CHAPTER NAVIGATION ---
 
@@ -177,26 +205,30 @@ export function useReaderController(
    */
   const loadNextChapter = useCallback(async () => {
     console.log("Loading next chapter...");
+    if (!currentVolume) return;
+    console.log("currentVolume", currentVolume);
 
     // Check if we can load next chapter
     if (
       isLoadingNext ||
-      !allChaptersMeta ||
-      lastLoadedTocIndex >= allChaptersMeta.length - 1
+      lastLoadedTocIndex < 0 ||
+      (lastLoadedTocIndex >= currentVolume.chapters.length - 1 &&
+        loadedChaptersData.length > 0)
     ) {
-      if (
-        allChaptersMeta &&
-        lastLoadedTocIndex >= allChaptersMeta.length - 1 &&
-        loadedChaptersData.length > 0
-      ) {
-        toast.info("You've reached the end of the novel.");
+      const nextVolume = volumes.findIndex((v) => v.id === currentVolumeId) + 1;
+      if (nextVolume < volumes.length) {
+        setCurrentVolumeId(volumes[nextVolume].id);
+        setLastLoadedTocIndex(0);
+        toast.info("Loading next volume...");
+        return;
       }
+      toast.info("You've reached the end of the novel.");
       return;
     }
 
     setIsLoadingNext(true);
 
-    const nextChapterMeta = allChaptersMeta[lastLoadedTocIndex + 1];
+    const nextChapterMeta = currentVolume.chapters[lastLoadedTocIndex - 1];
     if (!nextChapterMeta) {
       setIsLoadingNext(false);
       return;
@@ -212,10 +244,7 @@ export function useReaderController(
     }
 
     // Load new chapter
-    const newChapter = await fetchChapterData(
-      nextChapterMeta.id,
-      nextChapterMeta
-    );
+    const newChapter = await fetchChapterData(nextChapterMeta);
 
     if (newChapter) {
       setLoadedChaptersData((prev) => [...prev, newChapter]);
@@ -224,13 +253,7 @@ export function useReaderController(
     }
 
     setIsLoadingNext(false);
-  }, [
-    isLoadingNext,
-    allChaptersMeta,
-    lastLoadedTocIndex,
-    fetchChapterData,
-    loadedChaptersData,
-  ]);
+  }, [isLoadingNext, lastLoadedTocIndex, fetchChapterData, loadedChaptersData]);
 
   // --- URL AND ACTIVE CHAPTER MANAGEMENT ---
 
@@ -310,10 +333,10 @@ export function useReaderController(
       if (!found) return;
 
       const { data: newActive } = found;
-      const newUrl = newActive.apiLink;
+      const newUrl = newActive.link;
 
       // Update URL if needed
-      if (window.location.pathname + window.location.search !== newUrl) {
+      if (window.location.href !== newUrl) {
         history.replaceState({ chapterUrl: newUrl }, "", newUrl);
       }
 
@@ -371,6 +394,12 @@ export function useReaderController(
     return 0;
   }, []);
 
+  console.log({
+    isLoadingInitial,
+    isLoadingNext,
+    loadedChaptersData,
+    currentVolume,
+  });
   /**
    * Debounced scroll handler to trigger loading the next chapter
    */
@@ -381,11 +410,13 @@ export function useReaderController(
           isLoadingInitial ||
           isLoadingNext ||
           !loadedChaptersData ||
-          lastLoadedTocIndex >= allChaptersMeta.length - 1
+          (currentVolume &&
+            lastLoadedTocIndex >= currentVolume?.chapters.length - 1)
         )
           return;
 
         const scrollPercentage = calculateScrollPercentage();
+        console.log("🚀 ~ debounce ~ scrollPercentage:", scrollPercentage);
         if (scrollPercentage >= SCROLL_TRIGGER_PERCENTAGE) {
           loadNextChapter();
         }
@@ -415,12 +446,10 @@ export function useReaderController(
     // State
     loadedChaptersData,
     activeChapterForUIDisplay,
-    novel,
-    allChaptersMeta,
     isLoadingInitial,
     isLoadingNext,
     error,
-
+    chapters: currentVolume?.chapters,
     // Functions
     loadNextChapter,
 

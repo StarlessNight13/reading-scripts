@@ -8,14 +8,16 @@ type ChapterContentProps = {
   getNextChapter?: () => void;
   hasNextChapter?: boolean;
 };
-
-type ChapterData = {
-  id: number;
+interface ChapterInfo {
   title: string;
-  url: string;
+  link: string;
+  chapterIndex: number;
+}
+interface ChapterData extends ChapterInfo {
+  id: number;
   content: string;
-  index: string;
-};
+  read: boolean;
+}
 
 export default function ChpaterContent({
   fontSize,

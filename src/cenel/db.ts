@@ -8,7 +8,7 @@ interface Novels {
   /**
    * URI or URL linking to the novel's resource.
    */
-  uri: string;
+  link: string;
   /**
    * Title or name of the novel.
    */
@@ -21,12 +21,12 @@ interface Novels {
    * Current reading status of the novel.
    * Can be one of: "reading", "planToRead", "dropped", "paused", or "completed".
    */
-  status: "reading" | "planToRead" | "dropped" | "paused" | "completed";
+  status: "reading" | "planToRead" | "dropped" | "paused" | "completed" | "none";
 
   /**
    * The total amount of Chapters in the novel.
    */
-  chaptersCount: number;
+  chaptersCount?: number;
 }
 
 interface Chapters {
