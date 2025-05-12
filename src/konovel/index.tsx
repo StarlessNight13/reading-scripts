@@ -18,7 +18,7 @@ export default function (tailwindcss: string) {
   const currentPage = findCurrentPage();
 
   if (currentPage === "user-library") {
-    document.body.classList.add("libraryPage");
+    document.body.className = "libraryPage";
     removeBaseStyles();
     GM_addStyle(tailwindcss);
 
@@ -33,7 +33,7 @@ export default function (tailwindcss: string) {
       <LibraryManager />
     );
   } else if (currentPage === "reader") {
-    document.body.classList.add("readerPage");
+    document.body.className = "readerPage";
     removeBaseStyles();
     GM_addStyle(tailwindcss);
     const chapterIdString = urlSearchParams.getSpecific("chapterId");

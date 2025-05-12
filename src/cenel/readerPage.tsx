@@ -14,17 +14,21 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { DiscussionEmbed } from "disqus-react";
-import { BotOffIcon, MessageSquare, RefreshCcw } from "lucide-react";
+import { LogOut, MessageSquare, RefreshCcw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import ChapterContent from "./components/ChapterContent";
+import { ReaderSidebar } from "./components/reader-sidebar";
 import {
   useReaderController,
   useReaderStates,
 } from "./components/readerController";
 import SettingsDialog from "./components/settingsDialog";
-import { ReaderSidebar } from "./components/reader-sidebar";
 
 type ReaderSettings = {
   fontSize: number;
@@ -172,18 +176,10 @@ function ChapterReader({
 
   return (
     <>
-      <header className="flex sticky top-0 bg-background h-16 shrink-0 items-center justify-between gap-2 border-b p-4 font-rubik">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => window.location.reload()}
-        >
-          <RefreshCcw className="h-5 w-5" />
-        </Button>
-
+      <header className="flex sticky top-0 bg-background/30 backdrop-blur z-50 h-16 shrink-0 items-center justify-between gap-2 border-b p-4 font-rubik text-center">
         {/* Display title of the chapter most in view */}
         {activeChapterForUIDisplay ? (
-          <Button variant="link" asChild className="truncate">
+          <Button variant="link" asChild className="truncate flex-1">
             <a
               href={activeChapterForUIDisplay.link}
               target="_blank"
@@ -195,19 +191,16 @@ function ChapterReader({
         ) : (
           <div className="w-1/3"></div>
         )}
-
-        <SettingsDialog
-          fontSize={settings.fontSize}
-          setFontSize={(val) => updateSetting("fontSize", val)}
-          fontFamily={settings.fontFamily}
-          setFontFamily={(val) => updateSetting("fontFamily", val)}
-          textGap={settings.textGap}
-          setTextGap={(val) => updateSetting("textGap", val)}
-          textWidth={settings.textWidth}
-          setTextWidth={(val) => updateSetting("textWidth", val)}
-          textAlign={settings.textAlign}
-          setTextAlign={(val) => updateSetting("textAlign", val)}
-        />
+        <Button
+          size="icon"
+          variant="destructive"
+          onClick={() => {
+            localStorage.setItem("readerEnabled", "false");
+            window.location.reload();
+          }}
+        >
+          <LogOut />
+        </Button>
       </header>
       <main className="flex flex-col flex-grow mt-28" ref={outerListRef}>
         {loadedChaptersData.map((chapter, index) => (
@@ -254,19 +247,28 @@ function ChapterReader({
         ))}
       </main>
       <Drawer>
-        <footer className="fixed bottom-5 left-5 z-30 flex gap-2 flex-col">
+        <footer className="fixed bottom-5 right-5 z-30 flex gap-2 flex-col">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => window.location.reload()}
+          >
+            <RefreshCcw className="h-5 w-5" />
+          </Button>
+          <SettingsDialog
+            fontSize={settings.fontSize}
+            setFontSize={(val) => updateSetting("fontSize", val)}
+            fontFamily={settings.fontFamily}
+            setFontFamily={(val) => updateSetting("fontFamily", val)}
+            textGap={settings.textGap}
+            setTextGap={(val) => updateSetting("textGap", val)}
+            textWidth={settings.textWidth}
+            setTextWidth={(val) => updateSetting("textWidth", val)}
+            textAlign={settings.textAlign}
+            setTextAlign={(val) => updateSetting("textAlign", val)}
+          />
           <Button asChild size="icon" variant="default">
             <SidebarTrigger />
-          </Button>
-          <Button
-            size="icon"
-            variant="destructive"
-            onClick={() => {
-              localStorage.setItem("readerEnabled", "false");
-              window.location.reload();
-            }}
-          >
-            <BotOffIcon />
           </Button>
 
           {/* Comments Drawer - uses activeChapterForUIDisplay */}
@@ -330,13 +332,13 @@ export default function Layout({
     novel,
   });
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider defaultOpen={false} dir="ltr">
       <ReaderSidebar
         volumes={volumes ?? []}
         currentVolume={selectVolumeId ?? 0}
         currentChapter={activeChapterForUIDisplay?.chapterIndex ?? 0}
       />
-      <main>
+      <SidebarInset dir="rtl">
         <ChapterReader
           loadedChaptersData={loadedChaptersData}
           activeChapterForUIDisplay={activeChapterForUIDisplay}
@@ -348,7 +350,7 @@ export default function Layout({
           isLoadingNext={isLoadingNext}
           outerListRef={outerListRef}
         />
-      </main>
+      </SidebarInset>
     </SidebarProvider>
   );
 }

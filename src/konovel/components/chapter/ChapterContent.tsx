@@ -17,6 +17,17 @@ type ChapterData = {
   index: string;
 };
 
+function removeBrsInsideParagraphs(element: HTMLElement): void {
+  const paragraphElements = element.querySelectorAll("p");
+
+  paragraphElements.forEach((paragraph) => {
+    const brElements = paragraph.querySelectorAll("br");
+    brElements.forEach((br) => {
+      br.remove();
+    });
+  });
+}
+
 export default function ChpaterContent({
   fontSize,
   fontFamily,
@@ -25,16 +36,19 @@ export default function ChpaterContent({
   textWidth,
   textAlign,
 }: ChapterContentProps) {
+  const element = document.createElement("div");
+  element.innerHTML = chapterData.content;
+  removeBrsInsideParagraphs(element);
   return (
     <article
-      className={`prose prose-lg dark:prose-invert flex flex-col flex-1 ${fontFamily}`}
+      className={`flex flex-col flex-1 prose dark:prose-invert max-w-none ${fontFamily}`}
       style={{
         fontSize: `${fontSize}px`,
         gap: `${textGap}px`,
         paddingInline: `${textWidth}%`,
         textAlign: textAlign,
       }}
-      dangerouslySetInnerHTML={{ __html: chapterData.content }}
+      dangerouslySetInnerHTML={{ __html: element.innerHTML }}
     />
   );
 }

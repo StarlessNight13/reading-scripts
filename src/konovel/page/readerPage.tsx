@@ -14,7 +14,11 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { DiscussionEmbed } from "disqus-react";
 import { MessageSquare, RefreshCcw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -149,18 +153,10 @@ function ChapterReader({
 
   return (
     <>
-      <header className="flex sticky top-0 bg-background h-16 shrink-0 items-center justify-between gap-2 border-b p-4 font-rubik">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => window.location.reload()}
-        >
-          <RefreshCcw className="h-5 w-5" />
-        </Button>
-
+      <header className="flex sticky top-0 bg-background/30 backdrop-blur z-50 h-16 shrink-0 items-center justify-between gap-2 border-b p-4 font-rubik text-center">
         {/* Display title of the chapter most in view */}
         {activeChapterForUIDisplay ? (
-          <Button variant="link" asChild className="truncate">
+          <Button variant="link" asChild className="truncate flex-1">
             <a
               href={activeChapterForUIDisplay.url}
               target="_blank"
@@ -172,25 +168,12 @@ function ChapterReader({
         ) : (
           <div className="w-1/3"></div>
         )}
-
-        <SettingsDialog
-          fontSize={settings.fontSize}
-          setFontSize={(val) => updateSetting("fontSize", val)}
-          fontFamily={settings.fontFamily}
-          setFontFamily={(val) => updateSetting("fontFamily", val)}
-          textGap={settings.textGap}
-          setTextGap={(val) => updateSetting("textGap", val)}
-          textWidth={settings.textWidth}
-          setTextWidth={(val) => updateSetting("textWidth", val)}
-          textAlign={settings.textAlign}
-          setTextAlign={(val) => updateSetting("textAlign", val)}
-        />
       </header>
-      <main className="flex flex-col flex-grow mt-28" ref={outerListRef}>
+      <main className="flex flex-col flex-1" ref={outerListRef}>
         {loadedChaptersData.map((chapter, index) => (
           <div
             key={`chapter-${chapter.id}`}
-            className="chapter-container flex flex-col group mb-20 h-fit"
+            className="chapter-container flex flex-col mb-20 overflow-x-hidden"
             data-url={`https://kolbook.xyz/reader?chapterId=${chapter.id}`} // Or use chapter.url
             data-read={chapter.read}
             data-chapter-id={chapter.id}
@@ -231,15 +214,35 @@ function ChapterReader({
         ))}
       </main>
       <Drawer>
-        <footer className="fixed bottom-5 left-5 z-30 flex gap-2 flex-col">
+        <footer className="fixed bottom-5 right-5 z-30 flex gap-2 flex-col">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => window.location.reload()}
+          >
+            <RefreshCcw />
+          </Button>
+
+          <SettingsDialog
+            fontSize={settings.fontSize}
+            setFontSize={(val) => updateSetting("fontSize", val)}
+            fontFamily={settings.fontFamily}
+            setFontFamily={(val) => updateSetting("fontFamily", val)}
+            textGap={settings.textGap}
+            setTextGap={(val) => updateSetting("textGap", val)}
+            textWidth={settings.textWidth}
+            setTextWidth={(val) => updateSetting("textWidth", val)}
+            textAlign={settings.textAlign}
+            setTextAlign={(val) => updateSetting("textAlign", val)}
+          />
+
           <Button asChild size="icon" variant="default">
             <SidebarTrigger />
           </Button>
-
           {/* Comments Drawer - uses activeChapterForUIDisplay */}
           <DrawerTrigger asChild>
             <Button size="icon" aria-label="Comments">
-              <MessageSquare className="h-5 w-5" />
+              <MessageSquare />
               <span className="sr-only">Comments</span>
             </Button>
           </DrawerTrigger>
@@ -289,12 +292,12 @@ export default function Layout({ initialChapterId }: ReaderLayoutProps) {
     outerListRef,
   } = useReaderController(initialChapterId);
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider defaultOpen={false} dir="ltr">
       <ReaderSidebar
         allChapters={allChaptersMeta}
         currentChapter={activeChapterForUIDisplay?.id ?? initialChapterId}
       />
-      <main>
+      <SidebarInset dir="rtl">
         <ChapterReader
           loadedChaptersData={loadedChaptersData}
           activeChapterForUIDisplay={activeChapterForUIDisplay}
@@ -307,7 +310,7 @@ export default function Layout({ initialChapterId }: ReaderLayoutProps) {
           loadNextChapter={loadNextChapter}
           outerListRef={outerListRef}
         />
-      </main>
+      </SidebarInset>
     </SidebarProvider>
   );
 }

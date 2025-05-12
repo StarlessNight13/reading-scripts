@@ -7,11 +7,11 @@ import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
+  SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
 } from "@/components/ui/sidebar";
 import { ChevronRight } from "lucide-react";
 
@@ -32,51 +32,69 @@ interface ReaderSidebarProps {
   currentVolume: number;
 }
 
-export function ReaderSidebar({
-  volumes,
-  currentChapter,
+const VolumeComponent = ({
+  volume,
   currentVolume,
-}: ReaderSidebarProps) {
+}: {
+  volume: VolumeInfo;
+  currentVolume: number;
+}) => {
   return (
-    <Sidebar side="right">
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>فصول</SidebarGroupLabel>
-          <SidebarMenu>
-            {volumes.map((volume) => (
-              <Collapsible
-                key={volume.id}
-                asChild
-                defaultOpen={currentVolume === volume.id}
-                className="group/collapsible"
-              >
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton tooltip={volume.title}>
-                      <span>{volume.title}</span>
-                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+    <Collapsible
+      key={volume.title}
+      title={volume.title}
+      defaultOpen={volume.id === currentVolume}
+      className="group/collapsible "
+    >
+      <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+        <SidebarGroupLabel
+          asChild
+          className="group/label text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+        >
+          <CollapsibleTrigger>
+            {volume.title}{" "}
+            <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
+          </CollapsibleTrigger>
+        </SidebarGroupLabel>
+        <CollapsibleContent>
+          <SidebarGroupContent className="mt-1">
+            <SidebarMenu dir="rtl">
+              {volume.chapters
+                .map((chapter, index) => (
+                  <SidebarMenuItem key={index + chapter.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={index === volume.selectedChapterIndex}
+                    >
+                      <a href={chapter.link}>
+                        <span>
+                          {chapter.chapterIndex} : {chapter.title}
+                        </span>
+                      </a>
                     </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub className="h-full">
-                      {volume.chapters?.map((chapter) => (
-                        <SidebarMenuItem key={chapter.chapterIndex}>
-                          <SidebarMenuButton
-                            asChild
-                            isActive={currentChapter === chapter.chapterIndex}
-                          >
-                            <a href={chapter.link}>
-                              {chapter.chapterIndex} : {chapter.title}
-                            </a>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      ))}
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </SidebarMenuItem>
-              </Collapsible>
-            ))}
-          </SidebarMenu>
+                  </SidebarMenuItem>
+                ))
+                .reverse()}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </CollapsibleContent>
+      </SidebarGroup>
+    </Collapsible>
+  );
+};
+
+export function ReaderSidebar({ volumes, currentVolume }: ReaderSidebarProps) {
+  return (
+    <Sidebar dir="rtl">
+      <SidebarContent className="scrollbar scrollbar-thumb-primary scrollbar-track-background h-full">
+        <SidebarGroup>
+          {volumes.map((volume) => (
+            <VolumeComponent
+              key={volume.id}
+              volume={volume}
+              currentVolume={currentVolume}
+            />
+          ))}
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>

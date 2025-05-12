@@ -24,19 +24,20 @@ export function ReaderSidebar({
   currentChapter,
 }: ReaderSidebarProps) {
   return (
-    <Sidebar side="right">
+    <Sidebar>
       <SidebarContent>
-        <SidebarMenu className="h-full">
-          <VirtualizedList overscan={5}>
+        <SidebarMenu className="h-full" dir="rtl">
+          <VirtualizedList
+            overscan={5}
+            className="scrollbar scrollbar-thumb-primary scrollbar-track-background"
+          >
             {allChapters.map((item) => (
-              <SidebarMenuItem key={item.id}>
-                <SidebarMenuButton asChild>
-                  <a
-                    href={`/reader?chapterId=${item.id}`}
-                    data-state={
-                      item.id === currentChapter ? "checked" : "unchecked"
-                    }
-                  >
+              <SidebarMenuItem key={item.id} className="m-1">
+                <SidebarMenuButton
+                  asChild
+                  isActive={item.id === currentChapter}
+                >
+                  <a href={`/reader?chapterId=${item.id}`}>
                     <span>
                       {item.chapterIndex} : {item.title}
                     </span>

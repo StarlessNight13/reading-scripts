@@ -28,17 +28,15 @@ export default function ChpaterContent({
   textAlign,
 }: ChapterContentProps) {
   return (
-    <main className="flex flex-1 flex-col justify-center ">
-      <article
-        className={`prose prose-lg dark:prose-invert flex flex-col flex-1 ${fontFamily}`}
-        style={{
-          fontSize: `${fontSize}px`,
-          gap: `${textGap}px`,
-          paddingInline: `${textWidth}%`,
-          textAlign: textAlign,
-        }}
-        dangerouslySetInnerHTML={{ __html: chapterData.content }}
-      />
-    </main>
+    <article
+      className={`flex flex-col flex-1 prose dark:prose-invert max-w-none ${fontFamily}`}
+      style={{
+        fontSize: `${fontSize}px`,
+        gap: `${textGap}px`,
+        paddingInline: `${textWidth}%`,
+        textAlign: textAlign,
+      }}
+      dangerouslySetInnerHTML={{ __html: chapterData.content }}
+    />
   );
 }
