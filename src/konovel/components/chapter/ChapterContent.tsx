@@ -28,6 +28,30 @@ function removeBrsInsideParagraphs(element: HTMLElement): void {
   });
 }
 
+function processHTMLString(htmlString: string) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlString, "text/html");
+  const body = doc.body;
+
+  const divsToProcess = Array.from(body.querySelectorAll("div"));
+
+  divsToProcess.forEach((divElement) => {
+    const paragraphsToMove = Array.from(divElement.children).filter(
+      (child) => child.tagName.toLowerCase() === "p"
+    );
+
+    // Insert the paragraphs before the div
+    paragraphsToMove.forEach((p) => {
+      divElement.parentNode?.insertBefore(p, divElement);
+    });
+
+    // Remove the original div
+    divElement.remove();
+  });
+
+  return body.innerHTML;
+}
+
 export default function ChpaterContent({
   fontSize,
   fontFamily,
@@ -37,16 +61,17 @@ export default function ChpaterContent({
   textAlign,
 }: ChapterContentProps) {
   const element = document.createElement("div");
-  element.innerHTML = chapterData.content;
+  element.innerHTML = processHTMLString(chapterData.content);
   removeBrsInsideParagraphs(element);
+
   return (
     <article
-      className={`flex flex-col flex-1 prose dark:prose-invert max-w-none ${fontFamily}`}
+      className={`flex flex-col flex-1 prose dark:prose-invert ${fontFamily}`}
       style={{
-        fontSize: `${fontSize}px`,
         gap: `${textGap}px`,
-        paddingInline: `${textWidth}%`,
+        paddingInline: `${textWidth > 30 ? 30 : textWidth}%`,
         textAlign: textAlign,
+        fontSize: `${fontSize}px`,
       }}
       dangerouslySetInnerHTML={{ __html: element.innerHTML }}
     />

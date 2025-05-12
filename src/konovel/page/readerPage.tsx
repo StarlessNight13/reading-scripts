@@ -186,7 +186,7 @@ function ChapterReader({
         {loadedChaptersData.map((chapter, index) => (
           <div
             key={`chapter-${chapter.id}`}
-            className="chapter-container flex flex-col mb-20 overflow-x-hidden"
+            className="chapter-container flex flex-col mb-20 "
             data-url={`https://kolbook.xyz/reader?chapterId=${chapter.id}`} // Or use chapter.url
             data-read={chapter.read}
             data-chapter-id={chapter.id}
