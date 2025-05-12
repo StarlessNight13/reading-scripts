@@ -33,6 +33,12 @@ function processHTMLString(htmlString: string) {
   const doc = parser.parseFromString(htmlString, "text/html");
   const body = doc.body;
 
+  const allElements = Array.from(body.querySelectorAll("*"));
+  allElements.forEach((element) => {
+    if (element.hasAttribute("style")) {
+      element.removeAttribute("style");
+    }
+  });
   const divsToProcess = Array.from(body.querySelectorAll("div"));
 
   divsToProcess.forEach((divElement) => {
@@ -66,7 +72,7 @@ export default function ChpaterContent({
 
   return (
     <article
-      className={`flex flex-col flex-1 prose dark:prose-invert ${fontFamily}`}
+      className={`flex flex-col flex-1 prose dark:prose-invert max-w-none ${fontFamily}`}
       style={{
         gap: `${textGap}px`,
         paddingInline: `${textWidth > 30 ? 30 : textWidth}%`,

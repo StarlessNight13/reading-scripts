@@ -19,6 +19,47 @@ interface ChapterData extends ChapterInfo {
   read: boolean;
 }
 
+function removeBrsInsideParagraphs(element: HTMLElement): void {
+  const paragraphElements = element.querySelectorAll("p");
+
+  paragraphElements.forEach((paragraph) => {
+    const brElements = paragraph.querySelectorAll("br");
+    brElements.forEach((br) => {
+      br.remove();
+    });
+  });
+}
+
+function processHTMLString(htmlString: string) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlString, "text/html");
+  const body = doc.body;
+
+  const allElements = Array.from(body.querySelectorAll("*"));
+  allElements.forEach((element) => {
+    if (element.hasAttribute("style")) {
+      element.removeAttribute("style");
+    }
+  });
+  const divsToProcess = Array.from(body.querySelectorAll("div"));
+
+  divsToProcess.forEach((divElement) => {
+    const paragraphsToMove = Array.from(divElement.children).filter(
+      (child) => child.tagName.toLowerCase() === "p"
+    );
+
+    // Insert the paragraphs before the div
+    paragraphsToMove.forEach((p) => {
+      divElement.parentNode?.insertBefore(p, divElement);
+    });
+
+    // Remove the original div
+    divElement.remove();
+  });
+
+  return body.innerHTML;
+}
+
 export default function ChpaterContent({
   fontSize,
   fontFamily,
@@ -27,16 +68,20 @@ export default function ChpaterContent({
   textWidth,
   textAlign,
 }: ChapterContentProps) {
+  const element = document.createElement("div");
+  element.innerHTML = processHTMLString(chapterData.content);
+  removeBrsInsideParagraphs(element);
+
   return (
     <article
       className={`flex flex-col flex-1 prose dark:prose-invert max-w-none ${fontFamily}`}
       style={{
-        fontSize: `${fontSize}px`,
         gap: `${textGap}px`,
-        paddingInline: `${textWidth}%`,
+        paddingInline: `${textWidth > 30 ? 30 : textWidth}%`,
         textAlign: textAlign,
+        fontSize: `${fontSize}px`,
       }}
-      dangerouslySetInnerHTML={{ __html: chapterData.content }}
+      dangerouslySetInnerHTML={{ __html: element.innerHTML }}
     />
   );
 }
