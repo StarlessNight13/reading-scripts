@@ -17,12 +17,16 @@ export default defineConfig({
     monkey({
       entry: "src/main.tsx",
       userscript: {
-        icon: "https://vitejs.dev/logo.svg",
-        namespace: "npm/vite-plugin-monkey",
+        icon: "https://www.google.com/s2/favicons?sz=64&domain=kolbook.xyz",
+        namespace: "https://github.com/StarlessNight13",
         match: ["https://kolbook.xyz/*", "https://cenele.com/*"],
+        author: "StarlessNight13",
+        version: "1.2.7",
+        downloadURL:
+          "https://github.com/StarlessNight13/reading-scripts/releases/latest/download/reading-scripts.user.js",
       },
       server: {
-        open: false
+        open: false,
       },
       build: {
         externalGlobals: {
