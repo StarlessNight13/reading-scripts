@@ -21,7 +21,7 @@ export default defineConfig({
         namespace: "https://github.com/StarlessNight13",
         match: ["https://kolbook.xyz/*", "https://cenele.com/*"],
         author: "StarlessNight13",
-        version: "1.2.7",
+        version: "1.2.8",
         downloadURL:
           "https://github.com/StarlessNight13/reading-scripts/releases/latest/download/reading-scripts.user.js",
       },
