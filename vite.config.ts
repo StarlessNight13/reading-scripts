@@ -22,7 +22,9 @@ export default defineConfig({
         match: ["https://kolbook.xyz/*", "https://cenele.com/*"],
         author: "StarlessNight13",
         downloadURL:
-          "https://github.com/StarlessNight13/reading-scripts/releases/latest/download/reading-scripts.user.js",
+          "https://github.com/StarlessNight13/reading-scripts/releases/download/latest/reading-scripts.user.js",
+        updateURL:
+          "https://github.com/StarlessNight13/reading-scripts/releases/download/latest/reading-scripts.user.js",
       },
       server: {
         open: false,

@@ -10,6 +10,8 @@ import extractChapterData from "./util/extract-chapter";
 import cleanupHeadScriptsAndStyles from "./util/base-cleanup";
 
 export default function (tailwindcss: string) {
+  document.body.setAttribute("host", "cenel");
+
   const readerEnabled = localStorage.getItem("readerEnabled") === "true";
   const chapterList = extractChaptersMetaData();
   console.log("🚀 ~ chapterList:", chapterList);

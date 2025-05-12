@@ -16,10 +16,17 @@
   font-family: "Zain", sans-serif;
 }
 
-body[host="kolnovel"] {
-  div:has(.adblock_title),
-  div.code-block.code-block-31,
-  .wpcp-error-message {
-    display: none;
+body {
+  &[host="kolnovel"] {
+    div:has(.adblock_title),
+    div.code-block.code-block-31,
+    .wpcp-error-message {
+      display: none;
+    }
+  }
+  &[host="cenel"] {
+    div:has(.adblock_title):not(.wrap) {
+      display: none;
+    }
   }
 }
