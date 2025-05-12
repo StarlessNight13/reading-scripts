@@ -338,8 +338,7 @@ export function LibraryManager() {
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900 pb-8">
       <header className="py-2 px-4">
         <div className="container mx-auto">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">مكتبتي</h1>
+          <div className="flex items-center justify-center">
             <Button variant="outline" asChild>
               <a href="/">العودة إلى الصفحة الرئيسية</a>
             </Button>
