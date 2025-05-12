@@ -154,6 +154,19 @@ function ChapterReader({
   return (
     <>
       <header className="flex sticky top-0 bg-background/30 backdrop-blur z-50 h-16 shrink-0 items-center justify-between gap-2 border-b p-4 font-rubik text-center">
+        <SettingsDialog
+          fontSize={settings.fontSize}
+          setFontSize={(val) => updateSetting("fontSize", val)}
+          fontFamily={settings.fontFamily}
+          setFontFamily={(val) => updateSetting("fontFamily", val)}
+          textGap={settings.textGap}
+          setTextGap={(val) => updateSetting("textGap", val)}
+          textWidth={settings.textWidth}
+          setTextWidth={(val) => updateSetting("textWidth", val)}
+          textAlign={settings.textAlign}
+          setTextAlign={(val) => updateSetting("textAlign", val)}
+        />
+
         {/* Display title of the chapter most in view */}
         {activeChapterForUIDisplay ? (
           <Button variant="link" asChild className="truncate flex-1">
@@ -222,19 +235,6 @@ function ChapterReader({
           >
             <RefreshCcw />
           </Button>
-
-          <SettingsDialog
-            fontSize={settings.fontSize}
-            setFontSize={(val) => updateSetting("fontSize", val)}
-            fontFamily={settings.fontFamily}
-            setFontFamily={(val) => updateSetting("fontFamily", val)}
-            textGap={settings.textGap}
-            setTextGap={(val) => updateSetting("textGap", val)}
-            textWidth={settings.textWidth}
-            setTextWidth={(val) => updateSetting("textWidth", val)}
-            textAlign={settings.textAlign}
-            setTextAlign={(val) => updateSetting("textAlign", val)}
-          />
 
           <Button asChild size="icon" variant="default">
             <SidebarTrigger />
