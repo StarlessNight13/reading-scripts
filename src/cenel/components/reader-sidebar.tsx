@@ -35,9 +35,11 @@ interface ReaderSidebarProps {
 const VolumeComponent = ({
   volume,
   currentVolume,
+  currentChapter,
 }: {
   volume: VolumeInfo;
   currentVolume: number;
+  currentChapter: number;
 }) => {
   return (
     <Collapsible
@@ -59,12 +61,13 @@ const VolumeComponent = ({
         <CollapsibleContent>
           <SidebarGroupContent className="mt-1">
             <SidebarMenu dir="rtl">
-              {volume.chapters
+              {[...volume.chapters]
+                .reverse()
                 .map((chapter, index) => (
                   <SidebarMenuItem key={index + chapter.title}>
                     <SidebarMenuButton
                       asChild
-                      isActive={index === volume.selectedChapterIndex}
+                      isActive={index === currentChapter}
                     >
                       <a href={chapter.link}>
                         <span>
@@ -83,16 +86,21 @@ const VolumeComponent = ({
   );
 };
 
-export function ReaderSidebar({ volumes, currentVolume }: ReaderSidebarProps) {
+export function ReaderSidebar({
+  volumes,
+  currentVolume,
+  currentChapter,
+}: ReaderSidebarProps) {
   return (
     <Sidebar dir="rtl">
       <SidebarContent className="scrollbar scrollbar-thumb-primary scrollbar-track-background h-full">
         <SidebarGroup>
-          {volumes.map((volume) => (
+          {[...volumes].reverse().map((volume) => (
             <VolumeComponent
               key={volume.id}
               volume={volume}
               currentVolume={currentVolume}
+              currentChapter={currentChapter}
             />
           ))}
         </SidebarGroup>

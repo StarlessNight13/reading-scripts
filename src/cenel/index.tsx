@@ -14,7 +14,6 @@ export default function (tailwindcss: string) {
 
   const readerEnabled = localStorage.getItem("readerEnabled") === "true";
   const chapterList = extractChaptersMetaData();
-  console.log("🚀 ~ chapterList:", chapterList);
   if (!chapterList) {
     console.log("Failed to extract chapter list");
     return;

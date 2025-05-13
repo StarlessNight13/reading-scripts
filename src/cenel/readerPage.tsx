@@ -316,6 +316,7 @@ export default function Layout({
   initalChapterData,
   novel,
 }: ReaderLayoutProps) {
+  
   const {
     loadedChaptersData,
     activeChapterForUIDisplay,
@@ -324,13 +325,14 @@ export default function Layout({
     lastChapterRef,
     isLoadingNext,
     outerListRef,
-    chapters,
+    allChaptersMeta,
   } = useReaderController({
     volumes,
     selectVolumeId,
     initalChapterData,
     novel,
   });
+
   return (
     <SidebarProvider defaultOpen={false} dir="ltr">
       <ReaderSidebar
@@ -346,7 +348,7 @@ export default function Layout({
           isLoadingInitial={isLoadingInitial}
           error={error}
           lastChapterRef={lastChapterRef}
-          allChaptersMeta={chapters ?? []}
+          allChaptersMeta={allChaptersMeta ?? []}
           isLoadingNext={isLoadingNext}
           outerListRef={outerListRef}
         />
