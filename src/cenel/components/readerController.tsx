@@ -216,6 +216,7 @@ export function useReaderController({
     console.log("Loading next chapter...");
     if (!currentVolume) {
       console.error("No current volume found");
+      toast.error("No current volume found");
       return;
     }
 
@@ -249,6 +250,7 @@ export function useReaderController({
     if (!nextChapterMeta) {
       setIsLoadingNext(false);
       console.error("No next chapter found");
+      toast.error("No next chapter found");
       return;
     }
 
@@ -260,7 +262,7 @@ export function useReaderController({
         .update(currentChapterToMark.id, { readingCompletion: 100 })
         .catch(console.error);
     }
-
+    toast.info(`Loading: ${nextChapterMeta.title}`);
     // Load new chapter
     const newChapter = await fetchChapterData(nextChapterMeta);
 
@@ -469,6 +471,7 @@ export function useReaderController({
     error,
     novel,
     allChaptersMeta: chaptersInReversedOrder,
+    currentChapterIndex,
     // Functions
     loadNextChapter,
     // Refs

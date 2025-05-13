@@ -316,7 +316,6 @@ export default function Layout({
   initalChapterData,
   novel,
 }: ReaderLayoutProps) {
-  
   const {
     loadedChaptersData,
     activeChapterForUIDisplay,
@@ -326,6 +325,7 @@ export default function Layout({
     isLoadingNext,
     outerListRef,
     allChaptersMeta,
+    currentChapterIndex,
   } = useReaderController({
     volumes,
     selectVolumeId,
@@ -338,7 +338,7 @@ export default function Layout({
       <ReaderSidebar
         volumes={volumes ?? []}
         currentVolume={selectVolumeId ?? 0}
-        currentChapter={activeChapterForUIDisplay?.chapterIndex ?? 0}
+        currentChapter={currentChapterIndex ?? 0}
       />
       <SidebarInset dir="rtl">
         <ChapterReader

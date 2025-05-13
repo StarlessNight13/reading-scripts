@@ -43,7 +43,7 @@ const VolumeComponent = ({
 }) => {
   return (
     <Collapsible
-      key={volume.title}
+      key={volume.id}
       title={volume.title}
       defaultOpen={volume.id === currentVolume}
       className="group/collapsible "
@@ -67,7 +67,9 @@ const VolumeComponent = ({
                   <SidebarMenuItem key={index + chapter.title}>
                     <SidebarMenuButton
                       asChild
-                      isActive={index === currentChapter}
+                      isActive={
+                        index === currentChapter && volume.id === currentVolume
+                      }
                     >
                       <a href={chapter.link}>
                         <span>
@@ -91,19 +93,19 @@ export function ReaderSidebar({
   currentVolume,
   currentChapter,
 }: ReaderSidebarProps) {
+  const volumesList = [...volumes].reverse();
+
   return (
     <Sidebar dir="rtl">
       <SidebarContent className="scrollbar scrollbar-thumb-primary scrollbar-track-background h-full">
-        <SidebarGroup>
-          {[...volumes].reverse().map((volume) => (
-            <VolumeComponent
-              key={volume.id}
-              volume={volume}
-              currentVolume={currentVolume}
-              currentChapter={currentChapter}
-            />
-          ))}
-        </SidebarGroup>
+        {volumesList.map((volume) => (
+          <VolumeComponent
+            key={volume.id}
+            volume={volume}
+            currentVolume={currentVolume}
+            currentChapter={currentChapter}
+          />
+        ))}
       </SidebarContent>
     </Sidebar>
   );
