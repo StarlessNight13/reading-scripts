@@ -227,7 +227,7 @@ function ChapterReader({
         ))}
       </main>
       <Drawer>
-        <footer className="fixed bottom-7 right-5 z-30 flex gap-2 flex-col">
+        <footer className="fixed bottom-5 right-5 z-30 flex gap-2 flex-col">
           <Button
             variant="outline"
             size="icon"
