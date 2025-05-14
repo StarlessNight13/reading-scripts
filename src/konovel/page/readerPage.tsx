@@ -54,7 +54,7 @@ function useReaderSettings(): {
     fontSize: 16,
     fontFamily: "serif",
     textGap: 0,
-    textWidth: 100,
+    textWidth: 0,
     textAlign: "left",
   });
 
@@ -63,7 +63,7 @@ function useReaderSettings(): {
       fontSize: Number(localStorage.getItem("fontSize")) || 16,
       fontFamily: localStorage.getItem("fontFamily") || "serif",
       textGap: Number(localStorage.getItem("textGap")) || 0,
-      textWidth: Number(localStorage.getItem("textWidth")) || 100, // Default 100 if 0
+      textWidth: Number(localStorage.getItem("textWidth")) || 0, // Default 100 if 0
       textAlign:
         (localStorage.getItem("textAlign") as ReaderSettings["textAlign"]) ||
         "left",
@@ -150,7 +150,6 @@ function ChapterReader({
       </Card>
     );
   }
-
   return (
     <>
       <header className="flex sticky top-0 bg-background/30 backdrop-blur z-50 h-16 shrink-0 items-center justify-between gap-2 border-b p-4 font-rubik text-center">

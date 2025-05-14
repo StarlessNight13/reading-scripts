@@ -79,7 +79,7 @@ export default function ChpaterContent({
 
   return (
     <article
-      className={`flex flex-col flex-1 prose dark:prose-invert max-w-none ${fontFamily}`}
+      className={`flex flex-col flex-1 prose dark:prose-invert max-w-none prose-p:mt-0 prose-p:mb-0 ${fontFamily}`}
       style={{
         gap: `${textGap}px`,
         paddingInline: `${textWidth > 30 ? 30 : textWidth}%`,

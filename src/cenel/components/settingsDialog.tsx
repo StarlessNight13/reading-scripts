@@ -111,8 +111,8 @@ export default function SettingsDialog({
             <div className="flex items-center gap-4">
               <ChevronsUpDown />
               <Slider
-                min={12}
-                max={50}
+                min={0}
+                max={100}
                 step={1}
                 value={[textGap]}
                 onValueChange={(e) => toggleSetting("textGap", e[0].toString())}

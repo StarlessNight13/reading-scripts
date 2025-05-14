@@ -77,7 +77,7 @@ function useReaderSettings(): {
     fontSize: 16,
     fontFamily: "serif",
     textGap: 0,
-    textWidth: 100,
+    textWidth: 0,
     textAlign: "left",
   });
 
@@ -86,7 +86,7 @@ function useReaderSettings(): {
       fontSize: Number(localStorage.getItem("fontSize")) || 16,
       fontFamily: localStorage.getItem("fontFamily") || "serif",
       textGap: Number(localStorage.getItem("textGap")) || 0,
-      textWidth: Number(localStorage.getItem("textWidth")) || 100, // Default 100 if 0
+      textWidth: Number(localStorage.getItem("textWidth")) || 0,
       textAlign:
         (localStorage.getItem("textAlign") as ReaderSettings["textAlign"]) ||
         "left",
@@ -177,6 +177,18 @@ function ChapterReader({
   return (
     <>
       <header className="flex sticky top-0 bg-background/30 backdrop-blur z-50 h-16 shrink-0 items-center justify-between gap-2 border-b p-4 font-rubik text-center">
+        <SettingsDialog
+          fontSize={settings.fontSize}
+          setFontSize={(val) => updateSetting("fontSize", val)}
+          fontFamily={settings.fontFamily}
+          setFontFamily={(val) => updateSetting("fontFamily", val)}
+          textGap={settings.textGap}
+          setTextGap={(val) => updateSetting("textGap", val)}
+          textWidth={settings.textWidth}
+          setTextWidth={(val) => updateSetting("textWidth", val)}
+          textAlign={settings.textAlign}
+          setTextAlign={(val) => updateSetting("textAlign", val)}
+        />
         {/* Display title of the chapter most in view */}
         {activeChapterForUIDisplay ? (
           <Button variant="link" asChild className="truncate flex-1">
@@ -255,18 +267,7 @@ function ChapterReader({
           >
             <RefreshCcw className="h-5 w-5" />
           </Button>
-          <SettingsDialog
-            fontSize={settings.fontSize}
-            setFontSize={(val) => updateSetting("fontSize", val)}
-            fontFamily={settings.fontFamily}
-            setFontFamily={(val) => updateSetting("fontFamily", val)}
-            textGap={settings.textGap}
-            setTextGap={(val) => updateSetting("textGap", val)}
-            textWidth={settings.textWidth}
-            setTextWidth={(val) => updateSetting("textWidth", val)}
-            textAlign={settings.textAlign}
-            setTextAlign={(val) => updateSetting("textAlign", val)}
-          />
+
           <Button asChild size="icon" variant="default">
             <SidebarTrigger />
           </Button>
