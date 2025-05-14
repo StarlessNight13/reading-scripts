@@ -54,7 +54,12 @@ function processHTMLString(htmlString: string) {
     // Remove the original div
     divElement.remove();
   });
-
+  const pTags = body.querySelectorAll("p");
+  pTags.forEach((pTag) => {
+    if (!pTag.textContent || !pTag.textContent.trim()) {
+      pTag.remove();
+    }
+  });
   return body.innerHTML;
 }
 
