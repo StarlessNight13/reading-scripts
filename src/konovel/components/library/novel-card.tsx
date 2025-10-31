@@ -151,7 +151,7 @@ export function NovelCard({
   // Determine reading link and text
   const continueReadingLink =
     chapterStats.unFinishedChapter?.link ??
-    `https://kolbook.xyz/series/${novel.uri}`;
+    `https://kolnovel.com/series/${novel.uri}`;
 
   let continueReadingText = "ابدأ القراءة"; // Start Reading
 
@@ -209,7 +209,7 @@ export function NovelCard({
         <CardContent className="pt-0">
           <div className="relative">
             <a
-              href={`https://kolbook.xyz/series/${novel.uri}`}
+              href={`https://kolnovel.com/series/${novel.uri}`}
               className="block overflow-hidden rounded-md"
             >
               <img

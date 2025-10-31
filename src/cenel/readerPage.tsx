@@ -219,7 +219,7 @@ function ChapterReader({
           <div
             key={`chapter-${chapter.id}-${chapter.link}-${chapter.title}`}
             className="chapter-container flex flex-col group mb-20 h-fit"
-            data-url={`https://kolbook.xyz/reader?chapterId=${chapter.id}`} // Or use chapter.url
+            data-url={`https://kolnovel.com/reader?chapterId=${chapter.id}`} // Or use chapter.url
             data-read={chapter.read}
             data-chapter-id={chapter.id}
             id={`chapter-${chapter.id}`} // For direct navigation if needed

@@ -17,9 +17,9 @@ export default defineConfig({
     monkey({
       entry: "src/main.tsx",
       userscript: {
-        icon: "https://www.google.com/s2/favicons?sz=64&domain=kolbook.xyz",
+        icon: "https://www.google.com/s2/favicons?sz=64&domain=kolnovel.com",
         namespace: "https://github.com/StarlessNight13",
-        match: ["https://kolbook.xyz/*", "https://cenele.com/*"],
+        match: ["https://kolnovel.com/*", "https://cenele.com/*"],
         author: "StarlessNight13",
         downloadURL:
           "https://github.com/StarlessNight13/reading-scripts/releases/latest/download/reading-scripts.user.js",

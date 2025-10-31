@@ -5,7 +5,7 @@ import tailwindcss from "./tailwind.css?inline";
 
 (async () => {
   const website = location.hostname;
-  if (website === "kolbook.xyz") {
+  if (website === "kolnovel.com") {
     konovel(tailwindcss);
   } else if (website === "cenele.com") {
     cenel(tailwindcss);
