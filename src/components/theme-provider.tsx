@@ -31,21 +31,27 @@ export function ThemeProvider({
   )
 
   useEffect(() => {
-    const root = window.document.documentElement
+    const root = window.document.body
 
-    root.classList.remove("light", "dark")
 
     if (theme === "system") {
       const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
         .matches
-        ? "dark"
-        : "light"
+        ? "darkmode"
+        : "lightmode"
 
       root.classList.add(systemTheme)
       return
     }
 
-    root.classList.add(theme)
+    if (theme === "dark") {
+      root.classList.add("darkmode")
+      root.classList.remove("lightmode")
+    }
+    if (theme === "light") {
+      root.classList.add("lightmode")
+      root.classList.remove("darkmode")
+    }
   }, [theme])
 
   const value = {

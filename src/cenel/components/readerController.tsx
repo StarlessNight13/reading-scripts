@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { toast } from "sonner";
-import { debounce } from "@/konovel/lib/utils";
+import { debounce } from "@/kolnovel/lib/utils";
 import { api } from "@/cenel/api";
 import { db } from "@/cenel/db";
 

@@ -1,12 +1,12 @@
 import cenel from "./cenel";
-import konovel from "./konovel";
+import kolnovel from "./kolnovel";
 import "./index.css";
 import tailwindcss from "./tailwind.css?inline";
 
 (async () => {
   const website = location.hostname;
   if (website === "kolnovel.com") {
-    konovel(tailwindcss);
+    kolnovel(tailwindcss);
   } else if (website === "cenele.com") {
     cenel(tailwindcss);
   } else {

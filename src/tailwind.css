@@ -3,7 +3,7 @@
 @plugin "@tailwindcss/typography";
 @plugin 'tailwind-scrollbar';
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.darkmode *));
 
 @theme {
   --font-almarai: "Almarai", sans-serif;
@@ -65,7 +65,7 @@
   --shadow-2xl: 1px 2px 5px 1px hsl(0 0% 0% / 0.15);
 }
 
-.dark {
+.darkmode {
   --background: #1a1823;
   --foreground: #e0ddef;
   --card: #232030;

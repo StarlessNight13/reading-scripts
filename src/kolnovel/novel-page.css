@@ -1,0 +1,226 @@
+:root {
+  --background: 0 10% 98%;
+  --foreground: 0 10% 10%;
+  --card: 0 10% 98%;
+  --card-foreground: 0 10% 10%;
+  --primary: 0 85% 50%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 20% 90%;
+  --secondary-foreground: 0 10% 10%;
+  --destructive: 0 70% 40%;
+  --destructive-foreground: 0 0% 100%;
+  --accent: 0 70% 85%;
+  --accent-foreground: 0 10% 10%;
+  --ring: 0 85% 60%;
+  --border: 0 70% 85%;
+  --input: 0 70% 85%;
+}
+
+.library-buttons {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+}
+/* Base Button Styles */
+.button-base {
+  /* Layout */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+
+  /* Sizing */
+  height: 2.5rem;
+  padding: 0.5rem 1rem;
+
+  /* Typography */
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+
+  /* Visual */
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  outline: none;
+
+  /* Interaction */
+  cursor: pointer;
+  user-select: none;
+
+  /* Animation */
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Icon Styles */
+.button-base svg {
+  pointer-events: none;
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+}
+
+/* States */
+.button-base:disabled {
+  pointer-events: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button-base:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Primary Variant */
+.button-base.primary {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-color: hsl(var(--primary));
+}
+
+.button-base.primary:hover:not(:disabled) {
+  background-color: hsl(var(--primary) / 0.9);
+  box-shadow: 0 2px 8px hsl(var(--primary) / 0.3);
+}
+
+.button-base.primary:active:not(:disabled) {
+  background-color: hsl(var(--primary) / 0.8);
+  transform: translateY(1px);
+}
+
+/* Secondary Variant */
+.button-base.secondary {
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+  border-color: hsl(var(--secondary));
+}
+
+.button-base.secondary:hover:not(:disabled) {
+  background-color: hsl(var(--secondary) / 0.8);
+  box-shadow: 0 2px 8px hsl(var(--secondary) / 0.2);
+}
+
+.button-base.secondary:active:not(:disabled) {
+  background-color: hsl(var(--secondary) / 0.7);
+  transform: translateY(1px);
+}
+
+/* Destructive Variant */
+.button-base.destructive {
+  background-color: hsl(var(--destructive));
+  color: hsl(var(--destructive-foreground));
+  border-color: hsl(var(--destructive));
+}
+
+.button-base.destructive:hover:not(:disabled) {
+  background-color: hsl(var(--destructive) / 0.9);
+  box-shadow: 0 2px 8px hsl(var(--destructive) / 0.3);
+}
+
+.button-base.destructive:active:not(:disabled) {
+  background-color: hsl(var(--destructive) / 0.8);
+  transform: translateY(1px);
+}
+
+/* Outline Variants */
+.button-base.outline-primary {
+  background-color: transparent;
+  color: hsl(var(--primary));
+  border-color: hsl(var(--primary));
+}
+
+.button-base.outline-primary:hover:not(:disabled) {
+  background-color: hsl(var(--primary) / 0.1);
+}
+
+.button-base.outline-secondary {
+  background-color: transparent;
+  color: hsl(var(--secondary-foreground));
+  border-color: hsl(var(--border));
+}
+
+.button-base.outline-secondary:hover:not(:disabled) {
+  background-color: hsl(var(--secondary) / 0.1);
+}
+
+.button-base.outline-destructive {
+  background-color: transparent;
+  color: hsl(var(--destructive));
+  border-color: hsl(var(--destructive));
+}
+
+.button-base.outline-destructive:hover:not(:disabled) {
+  background-color: hsl(var(--destructive) / 0.1);
+}
+
+/* Ghost Variants */
+.button-base.ghost {
+  background-color: transparent;
+  border-color: transparent;
+  color: hsl(var(--foreground));
+}
+
+.button-base.ghost:hover:not(:disabled) {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+/* Link Variant */
+.button-base.link {
+  background-color: transparent;
+  border-color: transparent;
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  padding: 0;
+  height: auto;
+}
+
+.button-base.link:hover:not(:disabled) {
+  text-decoration: none;
+}
+
+/* Size Variants */
+.button-base.sm {
+  height: 2rem;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8125rem;
+}
+
+.button-base.lg {
+  height: 2.75rem;
+  padding: 0.625rem 1.5rem;
+  font-size: 0.9375rem;
+}
+
+.button-base.icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+}
+
+/* Loading State */
+.button-base.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.button-base.loading svg {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Invalid State */
+.button-base[aria-invalid="true"] {
+  border-color: hsl(var(--destructive));
+  box-shadow: 0 0 0 3px hsl(var(--destructive) / 0.2);
+}
