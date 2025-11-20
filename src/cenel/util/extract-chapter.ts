@@ -1,6 +1,6 @@
 import sanitizeHtml from "sanitize-html";
 
-export function removeEmptyParagraphs(container: HTMLElement): HTMLElement {
+function removeEmptyParagraphs(container: HTMLElement): HTMLElement {
   const allParagraphs = container.querySelectorAll("p");
 
   allParagraphs.forEach((p) => {
@@ -31,6 +31,7 @@ export function removeEmptyParagraphs(container: HTMLElement): HTMLElement {
 
   return container;
 }
+
 export default function extractChapterData(doc: Document) {
   const bookmarkButton = doc.querySelector<HTMLAnchorElement>(
     'a.wp-manga-action-button[data-action="bookmark"]'
