@@ -39,6 +39,7 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.17",
+    "vanjs-converter": "^0.2.1",
     "vanjs-core": "^1.6.0",
     "vanjs-lucide": "^0.0.4",
     "vaul": "^1.1.2",

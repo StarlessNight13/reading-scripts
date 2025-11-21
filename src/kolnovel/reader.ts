@@ -1,8 +1,7 @@
 import van, { State } from "vanjs-core";
 import { ChapterData } from "./types";
-import { htmlToVanCode } from "vanjs-converter";
 
-const { div, main, article, footer, span, header } = van.tags;
+const { div, main, article, footer, span } = van.tags;
 
 // Define structure for appending content dynamically
 export function updateReaderContent(data: ChapterData) {
@@ -11,14 +10,12 @@ export function updateReaderContent(data: ChapterData) {
 
   van.add(
     container,
-    div(
-      {
-        class: "reading-content",
-        "data-id": data.id,
-        "data-redirect": data.url,
-      },
-      htmlToVanCode(data.content).code
-    )
+    div({
+      class: "reading-content",
+      innerHTML: data.content,
+      "data-id": data.id,
+      "data-redirect": data.url,
+    })
   );
 }
 
@@ -27,9 +24,6 @@ export function ReaderView(
   loading: State<boolean>
 ) {
   return main(
-    header({
-      class: "chpater-header",
-    }),
     article(
       { id: "chapter-container", class: "chapter-container" },
       div({

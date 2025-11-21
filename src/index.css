@@ -804,18 +804,17 @@ div:has(.adblock_title):not(.wrap),
   height: 100px;
   border-radius: 50%;
   pointer-events: none;
-}
-
-.loader {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  display: inline-block;
-  border-top: 3px solid #fff;
-  border-right: 3px solid transparent;
-  box-sizing: border-box;
-  animation: rotation 1s linear infinite;
-  pointer-events: none;
+  .loader {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-block;
+    border-top: 3px solid #fff;
+    border-right: 3px solid transparent;
+    box-sizing: border-box;
+    animation: rotation 1s linear infinite;
+    pointer-events: none;
+  }
 }
 
 @keyframes rotation {

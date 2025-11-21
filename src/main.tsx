@@ -1,4 +1,4 @@
-import kolnovel from "./beta_kolnovel";
+import kolnovel from "./kolnovel";
 import cenel from "./cenel";
 import "./index.css";
 
