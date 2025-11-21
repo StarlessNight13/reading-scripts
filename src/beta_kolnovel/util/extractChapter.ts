@@ -102,7 +102,10 @@ const postRequest = async (
 ): Promise<string> => {
   const response = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    credentials: "include",
     body: createFormData(data),
   });
 

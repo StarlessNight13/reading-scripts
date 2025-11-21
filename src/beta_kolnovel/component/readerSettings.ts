@@ -1,6 +1,7 @@
 import van, { State } from "vanjs-core";
+import { NativeSelect, NativeSelectOption } from "./ui/select";
 
-const { div, h2, label, input, select, option, button, span, br } = van.tags;
+const { div, h2, label, input,  button, span } = van.tags;
 
 interface UserSettings {
   fontSize: number;
@@ -31,8 +32,6 @@ const settings = Object.fromEntries(
   ])
 ) as { [K in keyof UserSettings]: State<UserSettings[K]> };
 
-let readingContentElement: HTMLElement | null = null;
-
 function loadSettings(): void {
   const savedSettings = localStorage.getItem(STORAGE_KEY);
   if (savedSettings) {
@@ -51,21 +50,24 @@ function saveSettings(): void {
   );
   localStorage.setItem(STORAGE_KEY, JSON.stringify(currentValues));
 }
+const ReadingSettingsStyle = van.tags.style();
 
 function applySettingsToContent(): void {
-  if (!readingContentElement) return;
+  const chpaterContainer =
+    document.querySelector<HTMLDivElement>("#chpater-container");
+  if (!chpaterContainer) return;
+  const styleContent = `
+  #chpater-container {
+    --font-size: ${settings.fontSize.val}px;
+    --line-height: ${String(settings.lineHeight.val)};
+    --font-family: ${settings.fontFamily.val};
+    --max-width: ${settings.maxWidth.val}px;
+    --background: ${settings.backgroundColor.val};
+    --foreground: ${settings.textColor.val};
+    --font-saturation: ${String(settings.fontSaturation.val)};
+    }`;
 
-  Object.assign(readingContentElement.style, {
-    fontSize: `${settings.fontSize.val}px`,
-    lineHeight: String(settings.lineHeight.val),
-    fontFamily: settings.fontFamily.val,
-    maxWidth: `${settings.maxWidth.val}px`,
-    backgroundColor: settings.backgroundColor.val,
-    color: settings.textColor.val,
-    opacity: String(settings.fontSaturation.val),
-    margin: "0 auto",
-    boxSizing: "border-box",
-  });
+  ReadingSettingsStyle.textContent = styleContent;
 }
 
 let saveTimeout: ReturnType<typeof setTimeout>;
@@ -77,16 +79,27 @@ van.derive(() => {
   applySettingsToContent();
 });
 
-function RangeInput(
+function SettingItem(
   id: keyof UserSettings,
   labelText: string,
+  inputElement: () => HTMLElement | HTMLElement[]
+) {
+  return div(
+    { class: "setting-item" },
+    label({ htmlFor: id }, labelText),
+    inputElement()
+  );
+}
+
+function RangeInput(
+  id: keyof UserSettings,
   min: string,
   max: string,
   step: string = "1",
   formatter: (val: number) => string = (val) => String(val)
 ) {
-  return [
-    label({ htmlFor: id }, labelText),
+  return div(
+    { class: "range-input-group" },
     input({
       type: "range",
       id,
@@ -100,109 +113,97 @@ function RangeInput(
     span(
       { class: "value-display" },
       van.derive(() => formatter(settings[id].val as number))
-    ),
-    br(),
-  ];
+    )
+  );
 }
 
-function ColorInput(id: keyof UserSettings, labelText: string) {
-  return [
-    label({ htmlFor: id }, labelText),
-    input({
-      type: "color",
-      id,
-      value: van.derive(() => settings[id].val),
-      oninput: (e: Event) =>
-        (settings[id].val = (e.target as HTMLInputElement).value),
-    }),
-    br(),
-  ];
+function ColorInput(id: keyof UserSettings) {
+  return input({
+    type: "color",
+    id,
+    value: van.derive(() => settings[id].val),
+    oninput: (e: Event) =>
+      (settings[id].val = (e.target as HTMLInputElement).value),
+  });
 }
 
 function FontFamilySelect() {
   const fonts = [
-    { value: "serif", label: "Serif (Default)" },
-    { value: "sans-serif", label: "Sans-serif" },
-    { value: "monospace", label: "Monospace" },
-    { value: "Georgia, serif", label: "Georgia" },
-    { value: "Palatino, serif", label: "Palatino" },
-    { value: "Arial, sans-serif", label: "Arial" },
-    { value: "Verdana, sans-serif", label: "Verdana" },
+    { value: "noto-kufi-arabic", label: "noto-kufi-arabic (Default)" },
+    { value: "rubik", label: "Rubik" },
+    { value: "cairo", label: "Cairo" },
+    { value: "sans", label: "Sans" },
+    { value: "zain", label: "Zain" },
   ];
 
-  return [
-    label({ htmlFor: "fontFamily" }, "Font Family:"),
-    select(
-      {
-        id: "fontFamily",
-        value: van.derive(() => settings.fontFamily.val),
-        onchange: (e: Event) =>
-          (settings.fontFamily.val = (e.target as HTMLSelectElement).value),
-      },
-      fonts.map((font) => option({ value: font.value }, font.label))
-    ),
-    br(),
-  ];
+  return NativeSelect(
+    {
+      id: "fontFamily",
+      value: van.derive(() => settings.fontFamily.val),
+      onchange: (e: Event) =>
+        (settings.fontFamily.val = (e.target as HTMLSelectElement).value),
+    },
+    fonts.map((font) => NativeSelectOption({ value: font.value }, font.label))
+  );
 }
 
 export const SettingsPanel = () =>
   div(
-    { class: "settings-panel" },
+    { class: "settings-panel-content" },
     h2("Reading Settings"),
-    ...RangeInput("fontSize", "Font Size:", "10", "32", "1", (v) => `${v}px`),
-    ...RangeInput("lineHeight", "Line Height:", "1.0", "2.5", "0.1"),
-    ...FontFamilySelect(),
-    ...RangeInput(
-      "maxWidth",
-      "Line Width (Max):",
-      "400",
-      "1000",
-      "1",
-      (v) => `${v}px`
+    SettingItem("fontSize", "Font Size:", () =>
+      RangeInput("fontSize", "10", "32", "1", (v) => `${v}px`)
     ),
-    ...ColorInput("backgroundColor", "Background Color:"),
-    ...ColorInput("textColor", "Text Color:"),
-    ...RangeInput(
-      "fontSaturation",
-      "Font Saturation (Opacity):",
-      "0.2",
-      "1.0",
-      "0.05",
-      (v) => `${Math.round(v * 100)}%`
+    SettingItem("lineHeight", "Line Height:", () =>
+      RangeInput("lineHeight", "1.0", "2.5", "0.1")
     ),
-    button(
-      {
-        className: "rs-main-btn",
-        onclick: () => {
-          localStorage.setItem("readerEnabled", "false");
-          location.reload();
+    SettingItem("fontFamily", "Font Family:", () => FontFamilySelect()),
+    SettingItem("maxWidth", "Line Width (Max):", () =>
+      RangeInput("maxWidth", "400", "1000", "1", (v) => `${v}px`)
+    ),
+    SettingItem("backgroundColor", "Background Color:", () =>
+      ColorInput("backgroundColor")
+    ),
+    SettingItem("textColor", "Text Color:", () => ColorInput("textColor")),
+    SettingItem("fontSaturation", "Font Saturation (Opacity):", () =>
+      RangeInput(
+        "fontSaturation",
+        "0.2",
+        "1.0",
+        "0.05",
+        (v) => `${Math.round(v * 100)}%`
+      )
+    ),
+    div(
+      { class: "settings-actions" },
+      button(
+        {
+          className: "vbtn destructive md",
+          onclick: () => {
+            localStorage.setItem("CustomReader", "false");
+            location.reload();
+          },
         },
-      },
-      "Disable Reader"
-    ),
-    button(
-      {
-        onclick: () => {
-          Object.keys(DEFAULT_SETTINGS).forEach((key) => {
-            settings[key as keyof UserSettings].val =
-              DEFAULT_SETTINGS[key as keyof UserSettings];
-          });
+        "Disable Reader"
+      ),
+      button(
+        {
+          onclick: () => {
+            Object.keys(DEFAULT_SETTINGS).forEach((key) => {
+              settings[key as keyof UserSettings].val =
+                DEFAULT_SETTINGS[key as keyof UserSettings];
+            });
+          },
+          className: "vbtn secondary md",
         },
-      },
-      "Reset Settings"
+        "Reset Settings"
+      )
     )
   );
 
 const panelVisible = van.state(false);
 
 export function initializeReaderSettings(): void {
-  readingContentElement = document.querySelector(".reading-content");
-
-  const panelContainer = div(
-    { class: "settings-panel-container" },
-    SettingsPanel()
-  );
-
   const toggleButton = button(
     {
       class: "settings-toggle-button",
@@ -211,12 +212,17 @@ export function initializeReaderSettings(): void {
     van.derive(() => (panelVisible.val ? "✖" : "⚙"))
   );
 
-  van.derive(() => {
-    panelContainer.classList.toggle("visible", panelVisible.val);
-    toggleButton.classList.toggle("open", panelVisible.val);
-  });
+  const panel = div(
+    {
+      id: "van-settings-panel",
+      class: van.derive(() => (panelVisible.val ? "open" : "")),
+    },
+    toggleButton,
+    ReadingSettingsStyle,
+    SettingsPanel()
+  );
 
-  document.body.append(panelContainer, toggleButton);
+  van.add(document.body, panel);
 
   loadSettings();
   applySettingsToContent();

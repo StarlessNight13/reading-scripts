@@ -8,7 +8,7 @@ import {
 } from "../util/extractChapter";
 import { initializeReaderSettings } from "../component/readerSettings";
 
-const { button } = van.tags;
+const { button , div} = van.tags;
 
 const STORAGE_KEY = "CustomReader";
 
@@ -59,16 +59,21 @@ const initToggleButton = (state: State<boolean>) => {
 
   van.add(
     socialts,
-    button(
+    div(
       {
-        className: "primaryButton",
-        onclick: () => {
-          state.val = !state.val;
-          setReaderState(state.val);
-          location.reload();
-        },
+        style: "display: flex; justify-content: center; align-items: center;",
       },
-      van.derive(() => (state.val ? "Disable Reader" : "Enable Reader"))
+      button(
+        {
+          className: "vbtn md default",
+          onclick: () => {
+            state.val = !state.val;
+            setReaderState(state.val);
+            location.reload();
+          },
+        },
+        van.derive(() => (state.val ? "Disable Reader" : "Enable Reader"))
+      )
     )
   );
 };

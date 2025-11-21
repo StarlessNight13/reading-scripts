@@ -1,7 +1,7 @@
 import van from "vanjs-core";
 import chapterPage from "./routes/chapterPage";
 import novelPage from "./routes/novelPage";
-import "./style.css";
+// import "./style.css";
 type PageType = "user-library" | "reader" | "page" | "chapter" | "home";
 
 export default function main() {

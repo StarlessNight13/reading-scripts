@@ -1,7 +1,7 @@
 {
   "name": "reading-scripts",
   "private": true,
-  "version": "1.4.0",
+  "version": "1.5.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -40,6 +40,7 @@
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.17",
     "vanjs-core": "^1.6.0",
+    "vanjs-lucide": "^0.0.4",
     "vaul": "^1.1.2",
     "virtua": "^0.41.5",
     "zod": "^3.25.76"
