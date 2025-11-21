@@ -65,42 +65,30 @@ export default function extractChapterData(doc: Document) {
   return { content: sanitizedContent, id };
 }
 
-/**
- * @fileoverview Extracts chapter and volume metadata from the current page.
- */
-
-interface ChapterInfo {
-  title: string; // Parsed title of the chapter
-  link: string; // Constructed link to the chapter
-  chapterIndex: number; // Parsed chapter number or sequential index
+// --------- Chapter List ---------
+export interface ChapterInfo {
+  title: string;
+  link: string;
+  isDefaultSelected: boolean;
 }
 
-interface VolumeInfo {
-  id: number; // Numeric ID of the volume
-  title: string; // Text of the volume option
+export interface VolumeInfo {
+  id: number;
+  title: string;
   chapters: ChapterInfo[];
-  selectedChapterIndex: number; // Index of the selected chapter within this volume's chapter list
+  selectedChapterIndex: number;
+  isDefaultSelected: boolean;
 }
 
-interface ChaptersMetaData {
+export interface ChaptersMetaData {
   Volumes: VolumeInfo[];
-  selectedVolumeId: string | undefined; // The 'value' of the currently selected volume in the dropdown
+  selectedVolumeId: string | undefined;
 }
-// Regex to parse chapter text like "الفصل 123 - Chapter Title"
-const CHAPTER_TEXT_PATTERN = /^الفصل\s(\d+)\s-\s(.+)$/;
 
-/**
- * Fetches essential DOM elements required for metadata extraction.
- * @returns {object|null} An object containing DOM elements, or null if any are missing.
- */
 function getRequiredPageElements(): {
-  novelBaseLink: string;
   chaptersSelectElementsNodeList: NodeListOf<HTMLSelectElement>;
   volumesSelectElement: HTMLSelectElement | null;
 } | null {
-  const novelLinkElement = document.querySelector<HTMLAnchorElement>(
-    "#manga-reading-nav-head > div > div.entry-header_wrap > div > div.c-breadcrumb > ol > li:nth-child(2) > a"
-  );
   const chaptersSelectElementsNodeList =
     document.querySelectorAll<HTMLSelectElement>(
       "#manga-reading-nav-head select.selectpicker_chapter"
@@ -109,24 +97,16 @@ function getRequiredPageElements(): {
     "#manga-reading-nav-head select.volume-select"
   );
 
-  if (!novelLinkElement || !chaptersSelectElementsNodeList.length) {
-    console.warn(
-      "Essential elements (novel link, chapters select, or volumes select) not found."
-    );
+  if (!chaptersSelectElementsNodeList.length) {
+    console.warn("Essential elements not found.");
     return null;
   }
   return {
-    novelBaseLink: novelLinkElement.href,
     chaptersSelectElementsNodeList,
     volumesSelectElement,
   };
 }
 
-/**
- * Builds a map of volume IDs to their corresponding chapter select elements.
- * @param {NodeListOf<HTMLSelectElement>} chaptersSelectElementsNodeList - List of chapter select elements.
- * @returns {Map<string, HTMLSelectElement>} A map where keys are volume IDs and values are chapter select elements.
- */
 function buildChapterSelectorsMap(
   chaptersSelectElementsNodeList: NodeListOf<HTMLSelectElement>
 ): Map<string, HTMLSelectElement> {
@@ -146,74 +126,44 @@ function buildChapterSelectorsMap(
   return chapterSelectorsMap;
 }
 
-/**
- * Parses chapter text to extract its title and number.
- * @param {string} chapterText - The text of the chapter option.
- * @param {number} defaultIndex - The default index to use if chapter number cannot be parsed.
- * @returns {{title: string, chapterIndex: number}} Parsed chapter details.
- */
-function parseChapterDetails(
-  chapterText: string,
-  defaultIndex: number
-): { title: string; chapterIndex: number } {
-  const match = chapterText.match(CHAPTER_TEXT_PATTERN);
-  if (match) {
-    const chapterNumber = parseInt(match[1], 10);
-    const chapterTitle = match[2].trim();
-    return {
-      title: chapterTitle,
-      chapterIndex: !isNaN(chapterNumber) ? chapterNumber : defaultIndex,
-    };
-  }
-  return {
-    title: chapterText.trim(), // Fallback to full text as title
-    chapterIndex: defaultIndex,
-  };
-}
-
-/**
- * Extracts chapter information for a single volume.
- * @param {HTMLSelectElement} volumeChapterSelector - The select element containing chapters for a volume.
- * @param {string} novelBaseLink - The base URL for constructing chapter links.
- * @param {string} volumeIdForDebug - The ID of the current volume, for logging purposes.
- * @returns {{chapters: ChapterInfo[], selectedChapterIndex: number}} An object containing the list of chapters and the index of the selected chapter.
- */
-function extractChaptersForVolume(volumeChapterSelector: HTMLSelectElement): {
+function extractChaptersForVolume(
+  volumeChapterSelector: HTMLSelectElement,
+  selectedVolume: boolean
+): {
   chapters: ChapterInfo[];
   selectedChapterIndex: number;
 } {
   const chapters: ChapterInfo[] = [];
-  // Use selectedIndex, which is the index of the first selected option, or -1 if none.
-  // Default to 0 if no selection or if the control is empty.
   const selectedOptIndex = volumeChapterSelector.selectedIndex;
   let resolvedSelectedChapterIndex = selectedOptIndex;
 
-  Array.from(volumeChapterSelector.options).forEach((chapterOption, index) => {
-    const chapterLink = chapterOption.getAttribute("data-redirect");
-    const chapterText = chapterOption.text;
+  Array.from(volumeChapterSelector.options)
+    .reverse()
+    .forEach((chapterOption, index) => {
+      const chapterLink = chapterOption.getAttribute("data-redirect");
+      const chapterText = chapterOption.text;
+      const isChapterSelected = chapterOption.selected;
 
-    if (!chapterLink || !chapterText) {
-      console.warn(
-        `Invalid chapter data (missing ID or text) for chapter in Volume. Option:`,
-        chapterOption
-      );
-      return; // Skip this chapter
-    }
+      if (!chapterLink || !chapterText) {
+        console.warn(
+          `Invalid chapter data (missing ID or text) for chapter in Volume. Option:`,
+          chapterOption
+        );
+        return;
+      }
+      resolvedSelectedChapterIndex = isChapterSelected
+        ? index
+        : resolvedSelectedChapterIndex;
 
-    const { title, chapterIndex } = parseChapterDetails(chapterText, index);
-
-    chapters.push({
-      title: title,
-      link: chapterLink,
-      chapterIndex: chapterIndex,
+      chapters.push({
+        title: chapterText,
+        link: chapterLink,
+        isDefaultSelected: isChapterSelected,
+      });
     });
-  });
 
-  // If there are no chapters, selectedChapterIndex should ideally reflect that (e.g. -1 or 0).
-  // The original code used `?? 0`, so if no chapters, selected index becomes 0.
-  // If chapters exist, resolvedSelectedChapterIndex points to the selected one or the first one.
-  if (chapters.length === 0) {
-    resolvedSelectedChapterIndex = -1; // Or -1 if you prefer to indicate no possible selection
+  if (chapters.length === 0 || !selectedVolume) {
+    resolvedSelectedChapterIndex = -1;
   }
 
   return {
@@ -222,25 +172,20 @@ function extractChaptersForVolume(volumeChapterSelector: HTMLSelectElement): {
   };
 }
 
-/**
- * Main function to extract metadata for all volumes and their chapters.
- * It also identifies the ID of the volume currently selected in the UI.
- * @returns {ChaptersMetaData | null} An object containing all volume and chapter data,
- * and the ID of the currently selected volume, or null if essential elements are missing.
- */
 function extractChaptersMetaData(): ChaptersMetaData | null {
   const elements = getRequiredPageElements();
   if (!elements) {
-    console.log(elements);
-    return null; // Essential elements not found
+    return null;
   }
   const { chaptersSelectElementsNodeList, volumesSelectElement } = elements;
   if (!volumesSelectElement && chaptersSelectElementsNodeList.length === 0) {
     return null;
   } else if (!volumesSelectElement) {
     const chapterSelectElement = chaptersSelectElementsNodeList[0];
-    const { chapters, selectedChapterIndex } =
-      extractChaptersForVolume(chapterSelectElement);
+    const { chapters, selectedChapterIndex } = extractChaptersForVolume(
+      chapterSelectElement,
+      true
+    );
     return {
       Volumes: [
         {
@@ -248,6 +193,7 @@ function extractChaptersMetaData(): ChaptersMetaData | null {
           title: "unknown",
           chapters: chapters,
           selectedChapterIndex,
+          isDefaultSelected: true,
         },
       ],
       selectedVolumeId: "1",
@@ -258,41 +204,41 @@ function extractChaptersMetaData(): ChaptersMetaData | null {
     chaptersSelectElementsNodeList
   );
 
-  // This is the ID of the volume currently selected in the <select> dropdown when the function is called.
   const currentSelectedVolumeId = volumesSelectElement.value;
 
   const extractedVolumes = [];
-  // The original code reversed the volume options. Preserving this behavior.
-  // If order doesn't matter or should match DOM order, .reverse() can be removed.
   const volumeOptions = Array.from(volumesSelectElement.options).reverse();
 
   for (const volumeOption of volumeOptions) {
-    const volumeId = volumeOption.value; // This is a string
+    const volumeId = volumeOption.value;
     const volumeTitle = volumeOption.text.trim();
     const volumeChapterSelector = chapterSelectorsMap.get(volumeId);
+    const isSelected = volumeOption.selected;
 
     if (!volumeChapterSelector) {
       console.warn(
         `Chapter selector for Volume ID ${volumeId} ("${volumeTitle}") not found in map.`
       );
-      continue; // Skip this volume
+      continue;
     }
 
     const { chapters, selectedChapterIndex } = extractChaptersForVolume(
-      volumeChapterSelector
+      volumeChapterSelector,
+      isSelected
     );
 
     extractedVolumes.push({
-      id: Number(volumeId), // Converting volumeId string to number, as in original
+      id: Number(volumeId),
       title: volumeTitle,
       chapters: chapters,
       selectedChapterIndex: selectedChapterIndex,
+      isDefaultSelected: isSelected,
     });
   }
 
   return {
     Volumes: extractedVolumes,
-    selectedVolumeId: currentSelectedVolumeId, // The ID of the volume selected in the dropdown
+    selectedVolumeId: currentSelectedVolumeId,
   };
 }
 

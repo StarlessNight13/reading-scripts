@@ -1,24 +1,11 @@
 import van, { State } from "vanjs-core";
+import {
+  ChapterInfo,
+  ChaptersMetaData,
+  VolumeInfo,
+} from "../util/extract-chapter";
 
 const { div, button, ul, li, a } = van.tags;
-
-interface ChapterMetaData {
-  Volumes: VolumeInfo[];
-  selectedVolumeId: string | undefined;
-}
-
-interface VolumeInfo {
-  id: number;
-  title: string;
-  chapters: ChapterInfo[];
-  selectedChapterIndex: number;
-}
-
-interface ChapterInfo {
-  title: string;
-  link: string;
-  chapterIndex: number;
-}
 
 function createScrollListener(onFetch: () => void) {
   let fetchTriggered = false;
@@ -35,57 +22,51 @@ function createScrollListener(onFetch: () => void) {
   };
 }
 
-function ChapterItem(
-  chapter: ChapterInfo,
-  isActive: boolean,
-  activeItemRef: State<HTMLElement | null>
-) {
-  const linkProps: any = {
-    href: chapter.link,
-    class: isActive ? "active" : "",
-  };
-
-  if (isActive) {
-    linkProps.ref = (dom: HTMLElement) => (activeItemRef.val = dom);
-  }
-
-  return li({ class: "van-chapter-item" }, a(linkProps, chapter.title));
+function ChapterItem(chapter: ChapterInfo, isActive: State<boolean>) {
+  return li(
+    { class: () => `van-chapter-item ${isActive.val ? "active" : ""}` },
+    a(
+      {
+        href: chapter.link,
+        class: isActive.val ? "active" : "",
+      },
+      chapter.title
+    )
+  );
 }
 
 function VolumeSection(
   volume: VolumeInfo,
   isSelected: boolean,
-  selectedChapterIndex: number,
-  activeItemRef: State<HTMLElement | null>
+  selectedChapterIndex: State<number>
 ) {
-  const reversedChapterIndex =
-    volume.chapters.length - 1 - selectedChapterIndex;
   return div(
     div({ class: "van-volume-header" }, volume.title),
     ul(
       { class: "van-chapter-list" },
-      volume.chapters.reverse().map((chapter, idx) => {
-        const isActive = isSelected && idx === reversedChapterIndex;
-        return ChapterItem(chapter, isActive, activeItemRef);
+      volume.chapters.map((chapter, idx) => {
+        const isActive = van.derive(
+          () => isSelected && idx === selectedChapterIndex.val
+        );
+        return ChapterItem(chapter, isActive);
       })
     )
   );
 }
 
 export function initChapterNavigation(
-  metaDataState: State<ChapterMetaData | null>,
+  metaDataState: State<ChaptersMetaData | null>,
   onFetchNextChapter: () => void,
   chapterIndex: State<number>,
   volumeIndex: State<number>
 ) {
   const isOpen = van.state(false);
-  const activeItemRef = van.state<HTMLElement | null>(null);
-
   const togglePanel = () => {
     isOpen.val = !isOpen.val;
-    if (isOpen.val && activeItemRef.val) {
+    const activeItem = document.querySelector(".van-chapter-item.active");
+    if (isOpen.val && activeItem) {
       setTimeout(() => {
-        activeItemRef.val?.scrollIntoView({
+        activeItem.scrollIntoView({
           behavior: "smooth",
           block: "center",
         });
@@ -101,12 +82,7 @@ export function initChapterNavigation(
 
     return data.Volumes.map((volume, idx) => {
       const isSelected = volumeIndex.val !== -1 && idx === volumeIndex.val;
-      return VolumeSection(
-        volume,
-        !!isSelected,
-        chapterIndex.val,
-        activeItemRef
-      );
+      return VolumeSection(volume, !!isSelected, chapterIndex);
     });
   });
 

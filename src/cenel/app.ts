@@ -1,12 +1,12 @@
 import van, { State } from "vanjs-core";
+import { initChapterNavigation } from "./component/chpaterlist";
+import { ReaderCreator } from "./component/reader";
+import { initializeReaderSettings } from "./component/reader-settings";
+import { createChapterController } from "./util/chapter-controller";
+import cleanupHeadScriptsAndStyles from "./util/cleanup";
 import extractChapterData, {
   extractChaptersMetaData,
 } from "./util/extract-chapter";
-import cleanupHeadScriptsAndStyles from "./util/cleanup";
-import { initializeReaderSettings } from "./component/reader-settings";
-import { ReaderCreator } from "./component/reader";
-import { initChapterNavigation } from "./component/chpaterlist";
-import { createChapterController } from "./util/chapter-controller";
 
 const { button } = van.tags;
 
@@ -25,24 +25,46 @@ function buildReaderButton(state: State<boolean>) {
 }
 
 function initializeReaderMode() {
-  const chapterData = van.state(extractChapterData(document));
+  const initalChapterContent = van.state(extractChapterData(document));
   const chapterMetaData = van.state(extractChaptersMetaData());
 
-  if (!chapterData.val || !chapterMetaData.val) {
+  if (!initalChapterContent.val || !chapterMetaData.val) {
     console.error("Failed to extract chapter data or metadata");
     return;
   }
 
   document.body.innerHTML = "";
   document.body.className = "text-ui-light";
+  window.scroll({
+    top: 0,
+    left: 0,
+    behavior: "smooth",
+  });
 
-  const reader = ReaderCreator({ chapterData: chapterData.val });
-  const { navigateToNext, chapterIndex, volumeIndex } =
-    createChapterController(chapterMetaData);
+  const currentVolumeIndex = van.state(0);
+  const currentChapterIndex = van.state(0);
+  const loadingState = van.state(false);
+  const initalChapterId = initalChapterContent.val.id;
+  const appenedChapterSet = new Set<number>([initalChapterId]);
 
+  const reader = ReaderCreator({ initalChapterContent, loadingState });
+  const { navigateToNext, initState } = createChapterController(
+    chapterMetaData,
+    currentVolumeIndex,
+    currentChapterIndex,
+    loadingState,
+    appenedChapterSet
+  );
+
+  initState();
   cleanupHeadScriptsAndStyles();
   initializeReaderSettings();
-  initChapterNavigation(chapterMetaData, navigateToNext, chapterIndex, volumeIndex);
+  initChapterNavigation(
+    chapterMetaData,
+    navigateToNext,
+    currentChapterIndex,
+    currentVolumeIndex
+  );
 
   van.add(document.body, reader);
 }

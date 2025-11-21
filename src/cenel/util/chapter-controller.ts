@@ -1,118 +1,109 @@
-import van, { State } from "vanjs-core";
-import extractChapterData from "./extract-chapter";
+import { State } from "vanjs-core";
 import { updateChapterContent } from "../component/reader";
-
-export interface ChapterMetaData {
-  Volumes: VolumeInfo[];
-  selectedVolumeId: string | undefined;
-}
-
-export interface VolumeInfo {
-  id: number;
-  title: string;
-  chapters: ChapterInfo[];
-  selectedChapterIndex: number;
-}
-
-export interface ChapterInfo {
-  title: string;
-  link: string;
-  chapterIndex: number;
-}
-
-export interface IChapterController {
-  volumeIndex: State<number>;
-  chapterIndex: State<number>;
-  navigateToNext: () => Promise<void>;
-}
+import extractChapterData, { ChaptersMetaData } from "./extract-chapter";
 
 export function createChapterController(
-  metaDataState: State<ChapterMetaData | null>
-): IChapterController {
-  const volumeIndex = van.state(-1);
-  const chapterIndex = van.state(-1);
-
-  van.derive(() => {
+  metaDataState: State<ChaptersMetaData | null>,
+  currentVolumeIndex: State<number>,
+  currentChapterIndex: State<number>,
+  loadingState: State<boolean>,
+  chapterSet: Set<number>
+) {
+  const initState = () => {
     const data = metaDataState.val;
-    if (!data || !data.selectedVolumeId) return;
+    if (!data?.selectedVolumeId) return;
 
-    const vIdx = data.Volumes.findIndex(
+    const volumeIndex = data.Volumes.findIndex(
       (v) => String(v.id) === data.selectedVolumeId
     );
+    if (volumeIndex > data.Volumes.length) return;
 
-    if (vIdx !== -1) {
-      if (volumeIndex.val !== vIdx) volumeIndex.val = vIdx;
-      const cIdx = data.Volumes[vIdx].selectedChapterIndex;
-      if (chapterIndex.val !== cIdx) chapterIndex.val = cIdx;
-    }
-  });
+    currentVolumeIndex.val = volumeIndex;
+    currentChapterIndex.val = data.Volumes[volumeIndex].selectedChapterIndex;
 
-  async function fetchChapterContent(link: string) {
+  };
+
+  const fetchChapterContent = async (link: string) => {
     try {
       const response = await fetch(link, {
         credentials: "include",
         headers: {
           "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         },
       });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.text();
       const doc = new DOMParser().parseFromString(data, "text/html");
       return extractChapterData(doc);
     } catch (error) {
-      console.error(error);
+      console.error("Failed to fetch chapter content:", error);
       return null;
     }
-  }
+  };
 
   const navigateToNext = async () => {
     const data = metaDataState.val;
     if (!data) return;
+    loadingState.val = true;
 
-    const currentVolIdx = volumeIndex.val;
-    const currentChIdx = chapterIndex.val;
+    let nextVolumeIndex = currentVolumeIndex.val;
+    let nextChapterIndex = currentChapterIndex.val + 1;
 
-    let nextVolIdx = currentVolIdx;
-    let nextChIdx = currentChIdx - 1;
-    let targetChapter: ChapterInfo | undefined;
+    let currentVolume = data.Volumes[nextVolumeIndex];
+    if (!currentVolume) return;
 
-    if (nextChIdx >= 0) {
-      targetChapter = data.Volumes[nextVolIdx].chapters[nextChIdx];
+    // Check if there's a next chapter in the current volume
+    if (nextChapterIndex < currentVolume.chapters.length) {
+      currentChapterIndex.val = nextChapterIndex;
     } else {
-      nextVolIdx = currentVolIdx - 1;
-      if (nextVolIdx >= 0) {
-        const nextVolume = data.Volumes[nextVolIdx];
-        if (nextVolume.chapters.length > 0) {
-          nextChIdx = nextVolume.chapters.length - 1;
-          targetChapter = nextVolume.chapters[nextChIdx];
-        }
+      // Move to the next volume
+      nextVolumeIndex++;
+      // If there are no more volumes, we're at the end
+      if (nextVolumeIndex >= data.Volumes.length) {
+        console.log("Reached the last chapter of the last volume.");
+        return;
       }
+
+      const nextVolume = data.Volumes[nextVolumeIndex];
+      if (!nextVolume || !nextVolume.chapters.length) {
+        console.warn("Next volume or its chapters not found.");
+        return;
+      }
+
+      nextChapterIndex = 0;
+      currentVolumeIndex.val = nextVolumeIndex;
+      currentChapterIndex.val = nextChapterIndex;
+      currentVolume = nextVolume;
     }
 
-    if (!targetChapter) return;
+    const nextChapter = currentVolume.chapters[currentChapterIndex.val];
+    if (!nextChapter) {
+      console.warn("Next chapter not found after navigation logic.");
+      return;
+    }
 
-    const content = await fetchChapterContent(targetChapter.link);
-    if (!content) return;
+    if (!nextChapter) return;
 
-    updateChapterContent(content);
-    window.history.pushState(null, "", targetChapter.link);
+    try {
+      const newChapterContent = await fetchChapterContent(nextChapter.link);
+      if (!newChapterContent) return;
+      if (chapterSet.has(newChapterContent.id)) return;
+      chapterSet.add(newChapterContent.id);
 
-    const newVolumes = [...data.Volumes];
-    const targetVolume = { ...newVolumes[nextVolIdx] };
-    targetVolume.selectedChapterIndex = nextChIdx;
-    newVolumes[nextVolIdx] = targetVolume;
-
-    metaDataState.val = {
-      ...data,
-      Volumes: newVolumes,
-      selectedVolumeId: String(targetVolume.id),
-    };
+      updateChapterContent(newChapterContent);
+      window.history.pushState(null, "", nextChapter.link);
+      loadingState.val = false;
+    } catch (error) {
+      console.error(error);
+      loadingState.val = false;
+    }
   };
 
   return {
-    volumeIndex,
-    chapterIndex,
     navigateToNext,
+    initState,
   };
 }
