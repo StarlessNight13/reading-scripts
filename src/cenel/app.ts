@@ -37,11 +37,12 @@ function initializeReaderMode() {
   document.body.className = "text-ui-light";
 
   const reader = ReaderCreator({ chapterData: chapterData.val });
-  const { navigateToNext } = createChapterController(chapterMetaData);
+  const { navigateToNext, chapterIndex, volumeIndex } =
+    createChapterController(chapterMetaData);
 
   cleanupHeadScriptsAndStyles();
   initializeReaderSettings();
-  initChapterNavigation(chapterMetaData, navigateToNext);
+  initChapterNavigation(chapterMetaData, navigateToNext, chapterIndex, volumeIndex);
 
   van.add(document.body, reader);
 }

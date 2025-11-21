@@ -216,7 +216,10 @@ function extractChaptersForVolume(volumeChapterSelector: HTMLSelectElement): {
     resolvedSelectedChapterIndex = -1; // Or -1 if you prefer to indicate no possible selection
   }
 
-  return { chapters, selectedChapterIndex: resolvedSelectedChapterIndex };
+  return {
+    chapters,
+    selectedChapterIndex: resolvedSelectedChapterIndex,
+  };
 }
 
 /**

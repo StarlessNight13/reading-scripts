@@ -58,12 +58,14 @@ function VolumeSection(
   selectedChapterIndex: number,
   activeItemRef: State<HTMLElement | null>
 ) {
+  const reversedChapterIndex =
+    volume.chapters.length - 1 - selectedChapterIndex;
   return div(
     div({ class: "van-volume-header" }, volume.title),
     ul(
       { class: "van-chapter-list" },
-      volume.chapters.map((chapter, idx) => {
-        const isActive = isSelected && idx === selectedChapterIndex;
+      volume.chapters.reverse().map((chapter, idx) => {
+        const isActive = isSelected && idx === reversedChapterIndex;
         return ChapterItem(chapter, isActive, activeItemRef);
       })
     )
@@ -72,7 +74,9 @@ function VolumeSection(
 
 export function initChapterNavigation(
   metaDataState: State<ChapterMetaData | null>,
-  onFetchNextChapter: () => void
+  onFetchNextChapter: () => void,
+  chapterIndex: State<number>,
+  volumeIndex: State<number>
 ) {
   const isOpen = van.state(false);
   const activeItemRef = van.state<HTMLElement | null>(null);
@@ -95,13 +99,12 @@ export function initChapterNavigation(
     const data = metaDataState.val;
     if (!data?.Volumes) return null;
 
-    return data.Volumes.map((volume) => {
-      const isSelected =
-        data.selectedVolumeId && String(volume.id) === data.selectedVolumeId;
+    return data.Volumes.map((volume, idx) => {
+      const isSelected = volumeIndex.val !== -1 && idx === volumeIndex.val;
       return VolumeSection(
         volume,
         !!isSelected,
-        volume.selectedChapterIndex,
+        chapterIndex.val,
         activeItemRef
       );
     });
