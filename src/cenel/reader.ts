@@ -1,6 +1,5 @@
 import van, { State } from "vanjs-core";
 import { ChapterData } from "./types";
-import { htmlToVanCode } from "vanjs-converter";
 
 const { div, main, article, footer, span, header } = van.tags;
 
@@ -11,14 +10,12 @@ export function updateReaderContent(data: ChapterData) {
 
   van.add(
     container,
-    div(
-      {
-        class: "reading-content",
-        "data-id": data.id,
-        "data-redirect": data.url,
-      },
-      htmlToVanCode(data.content).code
-    )
+    div({
+      class: "reading-content",
+      "data-id": data.id,
+      "data-redirect": data.url,
+      innerHTML: data.content,
+    })
   );
 }
 
