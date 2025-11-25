@@ -1,14 +1,11 @@
 import sanitizeHtml from "sanitize-html";
-import {
-  ChapterExtractor,
-  cleanContentDOM,
-} from "@/util/extraction";
+import { ChapterExtractor, cleanContentDOM } from "@/util/extraction";
 import {
   ChapterData,
   GenericChapterMetaData,
   GenericVolumeInfo,
   GenericChapterInfo,
-  ChapterIdentifier
+  ChapterIdentifier,
 } from "@/types";
 
 class CenelExtractor implements ChapterExtractor {
@@ -21,7 +18,9 @@ class CenelExtractor implements ChapterExtractor {
       "#wp-manga-current-chap"
     );
 
-    const chapterHeading = doc.querySelector("#chapter-heading")?.textContent?.trim();
+    const chapterHeading = doc
+      .querySelector("#chapter-heading")
+      ?.textContent?.trim();
 
     const rawId =
       bookmarkBtn?.getAttribute("data-chapter") ||
@@ -46,7 +45,12 @@ class CenelExtractor implements ChapterExtractor {
     const cleanedContainer = cleanContentDOM(contentContainer);
     const sanitizedContent = sanitizeHtml(cleanedContainer.innerHTML);
 
-    return { content: sanitizedContent, id, url: url ?? window.location.href, title: chapterHeading ?? "" };
+    return {
+      content: sanitizedContent,
+      id,
+      url: url ?? window.location.href,
+      title: chapterHeading ?? "",
+    };
   }
 
   extractChaptersMetaData(
@@ -61,8 +65,7 @@ class CenelExtractor implements ChapterExtractor {
     );
 
     const parseChaptersFromSelect = (
-      select: HTMLSelectElement,
-      isVolumeSelected: boolean
+      select: HTMLSelectElement
     ): { chapters: GenericChapterInfo[]; selectedIndex: number } => {
       const chapters: GenericChapterInfo[] = [];
       let selectedIndex = -1;
@@ -75,7 +78,8 @@ class CenelExtractor implements ChapterExtractor {
           if (!link) return;
 
           // Determine if this chapter is the default selected one or matches currentChapterId
-          const isSelected = opt.selected || (currentChapterId && link === currentChapterId);
+          const isSelected =
+            opt.selected || (currentChapterId && link === currentChapterId);
           if (isSelected) {
             selectedIndex = index;
           }
@@ -93,10 +97,7 @@ class CenelExtractor implements ChapterExtractor {
 
     // Case 1: No Volumes, just chapters
     if (!volumeSelect && chapterSelects.length > 0) {
-      const { chapters, selectedIndex } = parseChaptersFromSelect(
-        chapterSelects[0],
-        true // This chapter select is "selected" by default
-      );
+      const { chapters } = parseChaptersFromSelect(chapterSelects[0]);
       return {
         isGrouped: false, // Treat as a single group of chapters
         volumes: [
@@ -128,10 +129,7 @@ class CenelExtractor implements ChapterExtractor {
           const chapterSel = chapterMap.get(volId);
 
           if (chapterSel) {
-            const { chapters } = parseChaptersFromSelect(
-              chapterSel,
-              volOpt.selected
-            );
+            const { chapters } = parseChaptersFromSelect(chapterSel);
             volumes.push({
               id: volId,
               title: volOpt.text.trim(),

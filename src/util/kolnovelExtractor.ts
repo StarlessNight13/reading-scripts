@@ -8,7 +8,7 @@ import {
   ChapterData,
   GenericChapterMetaData,
   GenericChapterInfo,
-  ChapterIdentifier
+  ChapterIdentifier,
 } from "@/types";
 
 const TEMPLATE_URL =
@@ -70,7 +70,8 @@ class KolnovelExtractor implements ChapterExtractor {
       return null;
     }
 
-    const chapterTitle = doc.querySelector("#Top_Up > div.cat-series")?.textContent?.trim() ?? "";
+    const chapterTitle =
+      doc.querySelector("#Top_Up > div.cat-series")?.textContent?.trim() ?? "";
 
     return {
       content: sanitizeHtml(cleanContentElement.innerHTML),
@@ -144,9 +145,6 @@ class KolnovelExtractor implements ChapterExtractor {
     if (!scriptElement?.textContent) {
       return null;
     }
-
-    const getNumberFromScript = (regex: RegExp): number =>
-      Number(scriptElement.textContent!.match(regex)?.[1]);
 
     const seriMatch = scriptElement.textContent.match(/'seri'\s*:\s*(\d+)/);
     const idMatch = scriptElement.textContent.match(/'ID'\s*:\s*(\d+)/);

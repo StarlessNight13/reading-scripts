@@ -1,5 +1,8 @@
-import sanitizeHtml from "sanitize-html";
-import { ChapterData, GenericChapterMetaData, GenericChapterInfo, ChapterIdentifier } from "@/types";
+import {
+  ChapterData,
+  ChapterIdentifier,
+  GenericChapterMetaData,
+} from "@/types";
 
 /**
  * Interface for a site-specific chapter extractor.
@@ -7,7 +10,10 @@ import { ChapterData, GenericChapterMetaData, GenericChapterInfo, ChapterIdentif
  */
 export interface ChapterExtractor {
   extractChapterData(doc: Document, url?: string): ChapterData | null;
-  extractChaptersMetaData(doc: Document, currentChapterId?: ChapterIdentifier): GenericChapterMetaData | null;
+  extractChaptersMetaData(
+    doc: Document,
+    currentChapterId?: ChapterIdentifier
+  ): GenericChapterMetaData | null;
 }
 
 /**

@@ -1,7 +1,7 @@
 import van from "vanjs-core";
 import { Palette, SunMoon } from "vanjs-lucide";
 
-const { div, h2, span, input, label } = van.tags;
+const { div, span, input, label } = van.tags;
 
 const STORAGE_KEY = "reader_theme";
 const MODE_KEY = "reader_theme_mode";
