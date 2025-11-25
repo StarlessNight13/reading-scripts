@@ -17,11 +17,6 @@ export default defineConfig({
         updateURL:
           "https://github.com/StarlessNight13/reading-scripts/releases/latest/download/reading-scripts.user.js",
       },
-      build: {
-        externalResource: {
-          "https://crystal-ui.com/v1/crystal-ui.css": "crystal-ui.css",
-        },
-      },
     }),
   ],
   resolve: {
