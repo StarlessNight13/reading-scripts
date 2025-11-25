@@ -1,3 +1,5 @@
+// cenel
+
 import van, { State } from "vanjs-core";
 import { ChevronLeft, ChevronRight } from "vanjs-lucide";
 import { ChaptersMetaData, ChapterInfo, VolumeInfo } from "../types";

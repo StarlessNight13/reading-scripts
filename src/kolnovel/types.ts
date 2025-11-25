@@ -1,3 +1,4 @@
+// kolnovel
 export interface ChapterData {
   content: string;
   id: number; // chapterID
@@ -7,6 +8,7 @@ export interface ChapterData {
 export interface ChapterInfo {
   title: string;
   id: number; // chapterID
+  isDefaultSelected: boolean;
 }
 
 export interface ChapterNovelInfo {

@@ -1,3 +1,5 @@
+// kolnovel
+
 import { ChapterInfo } from "../types";
 
 const TEMPLATE_URL =
@@ -28,15 +30,21 @@ const postRequest = async (
   return response.text();
 };
 
-const extractChaptersMetaData = (doc: Document): ChapterInfo[] => {
+const extractChaptersMetaData = (
+  doc: Document,
+  chapterId: number
+): ChapterInfo[] => {
   const chapterSelector =
     doc.querySelector<HTMLSelectElement>("#menu_chap_bot");
   if (!chapterSelector) return [];
 
-  return Array.from(chapterSelector.options).map(({ text, value }) => ({
-    title: text,
-    id: Number(value),
-  }));
+  return Array.from(chapterSelector.options)
+    .reverse()
+    .map(({ text, value }) => ({
+      title: text,
+      id: Number(value),
+      isDefaultSelected: value === String(chapterId),
+    }));
 };
 
 const fetchChapterList = async (
@@ -49,7 +57,7 @@ const fetchChapterList = async (
       ID: chapterId,
     });
     const doc = new DOMParser().parseFromString(htmlContent, "text/html");
-    return extractChaptersMetaData(doc);
+    return extractChaptersMetaData(doc, chapterId);
   } catch (error) {
     console.error("Error fetching chapter list:", error);
     throw error;

@@ -1,11 +1,13 @@
+// kolnovel
+
 import van, { State } from "vanjs-core";
+import { initSettings } from "./components/settings";
+import { initSidebar } from "./components/sidebar";
+import { createChapterController } from "./controller";
+import { ReaderView } from "./reader";
 import { extractChapterData, getChapterNovelInfo } from "./util/extraction";
 import { fetchChapterList } from "./util/fetcher";
-import { ReaderView } from "./reader";
-import { createChapterController } from "./controller";
 import { initVIewTracker } from "./viewTracker";
-import { initSidebar } from "./components/sidebar";
-import { initSettings } from "./components/settings";
 
 const { button, div } = van.tags;
 
@@ -40,7 +42,7 @@ const initApp = async () => {
   const chapterData = van.state(currentChapter);
   const chapterMetaData = van.state(chapterList);
   const chapterIndex = van.state(
-    chapterMetaData.val.findIndex((chapter) => chapter.id === currentChapter.id)
+    chapterMetaData.val.findIndex((chapter) => chapter.isDefaultSelected)
   );
   const loading = van.state(false);
   const seenIds = new Set([currentChapter.id]);
@@ -138,7 +140,6 @@ export default function main() {
   console.clear();
   document.body.setAttribute("host", "kolnovel");
   const readerState = van.state(getReaderState());
-
   if (document.querySelector("#Top_Up")) {
     if (readerState.val) {
       removeBaseStyles();

@@ -1,3 +1,4 @@
+// kolnovel
 import { State } from "vanjs-core";
 import { updateReaderContent } from "./reader";
 import { ChapterInfo } from "./types";

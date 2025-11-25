@@ -1,3 +1,5 @@
+// kolnovel
+
 import van, { State } from "vanjs-core";
 import { NativeSelect, NativeSelectOption } from "./ui/select";
 import { UserSettings } from "../types";
@@ -14,7 +16,7 @@ const DEFAULT_SETTINGS: UserSettings = {
   fontSaturation: 1.0,
 };
 
-const STORAGE_KEY = "reader_settings_v2";
+const STORAGE_KEY = "CustomReader";
 
 // Reactive Settings Object
 const settingsState = {} as {

@@ -1,3 +1,5 @@
+// kolnovel
+
 import van from "vanjs-core";
 
 const CONFIG = {

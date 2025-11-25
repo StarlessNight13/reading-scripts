@@ -1,3 +1,5 @@
+// cenel
+
 import van from "vanjs-core";
 import { initSettings } from "./components/settings";
 import { ReaderView } from "./reader";
