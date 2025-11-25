@@ -1,29 +1,25 @@
-import van from "vanjs-core";
+import { ReaderView } from "@/components/reader";
 import { initSettings } from "@/components/settings";
 import { initSidebar } from "@/components/sidebar";
 import { createChapterController } from "@/lib/chapterController";
-import { ReaderView } from "@/components/reader";
-import { kolnovelExtractor } from "@/util/kolnovelExtractor"; // Import Kolnovel's extractor
 import { initVIewTracker } from "@/lib/viewTracker";
 import {
-  GenericChapterMetaData,
   ChapterIdentifier,
   GenericChapterInfo,
+  GenericChapterMetaData,
 } from "@/types";
 import {
   getReaderState,
   injectToggle,
   setReaderState,
 } from "@/util/entrypointUtils"; // Shared utility
+import { kolnovelExtractor } from "@/util/kolnovelExtractor"; // Import Kolnovel's extractor
+import van from "vanjs-core";
 
 const HOST_IDENTIFIER = "kolnovel";
 
 function removeBaseStyles() {
-  const selectors = [
-    "#style-css",
-    "#wp-custom-css",
-    "head > style:not([type='text/css'])",
-  ];
+  const selectors = ["#style-css", "#wp-custom-css"];
 
   selectors.forEach((selector) => {
     document.head.querySelectorAll(selector).forEach((e) => e.remove());
@@ -107,7 +103,7 @@ async function launchReaderApp() {
     ? "dark"
     : "light";
   window.scrollTo(0, 0);
-  removeBaseStyles(); // Kolnovel-specific style removal
+  removeBaseStyles();
 
   // 2. State
   const chapterData = van.state(currentChapterData);
@@ -161,17 +157,18 @@ async function launchReaderApp() {
 
 export default function main(disabled: boolean) {
   console.clear();
-  document.body.setAttribute("host", HOST_IDENTIFIER);
-
-  const isEnabled = getReaderState(HOST_IDENTIFIER);
-
   if (document.querySelector("#Top_Up")) {
     if (disabled) {
       setReaderState(HOST_IDENTIFIER, false);
+      const url = new URL(window.location.href);
+      url.search = "";
+      window.history.replaceState({}, document.title, url.toString());
       return;
     }
+    const isEnabled = getReaderState(HOST_IDENTIFIER);
     // Check for a specific element that indicates a reading page (Kolnovel specific)
     if (isEnabled) {
+      document.body.setAttribute("host", HOST_IDENTIFIER);
       launchReaderApp();
     } else {
       const target = document.querySelector(".socialts"); // Kolnovel's existing toggle target

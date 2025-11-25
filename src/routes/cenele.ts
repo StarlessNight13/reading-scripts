@@ -91,15 +91,18 @@ async function launchReaderApp() {
 
 export default function main(disabled: boolean) {
   console.clear();
-  document.body.setAttribute("host", HOST_IDENTIFIER);
-
-  const isEnabled = getReaderState(HOST_IDENTIFIER);
 
   if (disabled) {
     setReaderState(HOST_IDENTIFIER, false);
+    const url = new URL(window.location.href);
+    url.search = "";
+    window.history.replaceState({}, document.title, url.toString());
+
     return;
   }
+  const isEnabled = getReaderState(HOST_IDENTIFIER);
   if (isEnabled) {
+    document.body.setAttribute("host", HOST_IDENTIFIER);
     launchReaderApp();
   } else {
     const target = document.querySelector<HTMLDivElement>("#reader-settings");

@@ -1,4 +1,4 @@
-import "./style.css";
+import  "./style.css";
 import kolnovel from "./routes/kolnovel";
 import cenel from "./routes/cenele";
 
