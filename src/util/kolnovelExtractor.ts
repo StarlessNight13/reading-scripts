@@ -141,20 +141,45 @@ class KolnovelExtractor implements ChapterExtractor {
 
   // Kolnovel specific utility to get ChapterNovelInfo from the script tag
   getChapterNovelInfo(doc: Document): { seri: number; id: number } | null {
-    const scriptElement = doc.querySelector("article > script:nth-child(8)");
-    if (!scriptElement?.textContent) {
+    const articleElement = doc.querySelector("article");
+
+    if (!articleElement) {
       return null;
     }
 
-    const seriMatch = scriptElement.textContent.match(/'seri'\s*:\s*(\d+)/);
-    const idMatch = scriptElement.textContent.match(/'ID'\s*:\s*(\d+)/);
-
-    if (seriMatch && idMatch) {
-      return {
-        seri: parseInt(seriMatch[1], 10),
-        id: parseInt(idMatch[1], 10),
-      };
+    const chapterIdMatch = articleElement.id.match(/post-(\d+)/);
+    if (!chapterIdMatch) {
+      return null;
     }
+    const chapterId = parseInt(chapterIdMatch[1], 10);
+
+    const scripts = [
+      doc.querySelector("article > script:nth-child(8)"),
+      doc.querySelector("#content > div > script:nth-child(4)"),
+      doc.querySelector("body > script:nth-child(5)"),
+    ];
+
+    for (const scriptElement of scripts) {
+      if (scriptElement && scriptElement.textContent) {
+        const seriMatch1 =
+          scriptElement.textContent.match(/'seri'\s*:\s*(\d+)/);
+        if (seriMatch1) {
+          return { seri: parseInt(seriMatch1[1], 10), id: chapterId };
+        }
+
+        const seriMatch2 =
+          scriptElement.textContent.match(/"series_ID":"(\d+)"/);
+        if (seriMatch2) {
+          return { seri: parseInt(seriMatch2[1], 10), id: chapterId };
+        }
+
+        const seriMatch3 = scriptElement.textContent.match(/"mid":"(\d+)"/);
+        if (seriMatch3) {
+          return { seri: parseInt(seriMatch3[1], 10), id: chapterId };
+        }
+      }
+    }
+
     return null;
   }
 }
