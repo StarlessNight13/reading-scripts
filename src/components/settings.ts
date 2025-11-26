@@ -1,9 +1,9 @@
+import { Toggler } from "@/util/entrypointUtils";
 import van, { State } from "vanjs-core";
-import { NativeSelect, NativeSelectOption } from "./ui/select";
+import { Cog, X } from "vanjs-lucide";
 import { UserSettings } from "../types";
 import ThemeSection from "./theme";
-import { Toggler } from "@/util/entrypointUtils";
-
+import { NativeSelect, NativeSelectOption } from "./ui/select";
 const { div, h2, label, input, button, span, style } = van.tags;
 
 const DEFAULT_SETTINGS: UserSettings = {
@@ -151,10 +151,9 @@ const SettingsPanel = () =>
     SettingRow("Theme", ThemeSection()),
     div(
       { class: "settings-actions" },
-      Toggler(),
       button(
         {
-          class: "vbtn secondary",
+          class: "reset-settings-btn",
           onclick: () =>
             Object.assign(
               settingsState,
@@ -188,8 +187,9 @@ export function initSettings() {
           class: "settings-toggle-button",
           onclick: () => (isOpen.val = !isOpen.val),
         },
-        () => (isOpen.val ? "✖" : "⚙")
+        () => (isOpen.val ? X() : Cog())
       ),
+      Toggler(),
       SettingsPanel()
     )
   );

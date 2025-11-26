@@ -5,8 +5,10 @@ import cenel from "./routes/cenele";
 (async () => {
   const website = location.hostname;
   const urlParams = new URLSearchParams(window.location.search);
-  const disabled = urlParams.get("disabled");
-
+  const disabled = urlParams.get("reader-disabeld");
+  
+  console.log("website", disabled);
+  
   if (website === "kolnovel.com") {
     kolnovel(disabled === "true");
   } else if (website === "cenele.com") {

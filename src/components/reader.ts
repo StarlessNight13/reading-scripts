@@ -1,7 +1,7 @@
 // cenel
 
-import van, { State } from "vanjs-core";
 import { ChapterData } from "@/types";
+import van, { State } from "vanjs-core";
 import Header from "./header";
 
 const { div, main, article, footer, span } = van.tags;

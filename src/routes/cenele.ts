@@ -93,14 +93,14 @@ export default function main(disabled: boolean) {
   console.clear();
 
   if (disabled) {
-    setReaderState(HOST_IDENTIFIER, false);
+    setReaderState(false);
     const url = new URL(window.location.href);
     url.search = "";
     window.history.replaceState({}, document.title, url.toString());
 
     return;
   }
-  const isEnabled = getReaderState(HOST_IDENTIFIER);
+  const isEnabled = getReaderState();
   if (isEnabled) {
     document.body.setAttribute("host", HOST_IDENTIFIER);
     launchReaderApp();
@@ -112,14 +112,7 @@ export default function main(disabled: boolean) {
       target.style.alignItems = "center";
       target.style.flexDirection = "column";
       target.style.gap = "1rem";
-      injectToggle(
-        target,
-        false,
-        HOST_IDENTIFIER,
-        "✖ Close",
-        "Reader Mode ⚙️",
-        "rs-main-btn"
-      );
+      injectToggle(target, false, "✖ Close", "Reader Mode ⚙️", "rs-main-btn");
     } else {
       console.warn("Cenel toggle button target '#reader-settings' not found.");
       // Fallback or just don't show if target is missing

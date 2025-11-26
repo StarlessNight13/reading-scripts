@@ -1,15 +1,15 @@
-import sanitizeHtml from "sanitize-html";
+import {
+  ChapterData,
+  ChapterIdentifier,
+  GenericChapterInfo,
+  GenericChapterMetaData,
+} from "@/types";
 import {
   ChapterExtractor,
   cleanContentDOM,
   postRequest,
 } from "@/util/extraction";
-import {
-  ChapterData,
-  GenericChapterMetaData,
-  GenericChapterInfo,
-  ChapterIdentifier,
-} from "@/types";
+import sanitizeHtml from "sanitize-html";
 
 const TEMPLATE_URL =
   "https://kolnovel.com/wp-content/themes/lightnovel_1.1.5_current/template-parts/single/list_1.php";
@@ -17,30 +17,60 @@ const TEMPLATE_URL =
 class KolnovelExtractor implements ChapterExtractor {
   // Helper to remove specific classes from style element (kolnovel specific)
   private removeClassesFromElements(doc: Document): boolean {
-    const styleElement = doc.querySelector("article > style:nth-child(2)");
-    if (!styleElement?.textContent) {
-      return false;
-    }
+    const styleElements = Array.from(
+      doc.querySelectorAll<HTMLStyleElement>("article > style")
+    );
 
-    const classesToRemove = new Set<string>();
-    const regex = /\.([a-zA-Z_-][a-zA-Z0-9_-]*)/g;
-    let match: RegExpExecArray | null;
+    const classesToRemove = this.findClassesWithSpecificStyles(styleElements);
+    console.log(classesToRemove);
 
-    while ((match = regex.exec(styleElement.textContent)) !== null) {
-      classesToRemove.add(match[1]);
-    }
-
-    if (!classesToRemove.size) {
-      return false;
-    }
-
-    classesToRemove.forEach((className) => {
-      doc.querySelectorAll<HTMLElement>(`.${className}`).forEach((element) => {
-        element.classList.remove(className);
+    classesToRemove.forEach((selector) => {
+      const elementsToRemove = doc.querySelectorAll<HTMLElement>(selector);
+      elementsToRemove.forEach((element) => {
+        element.remove();
       });
     });
 
     return true;
+  }
+
+  // Helper to find classes with specific styles (kolnovel specific)
+  private findClassesWithSpecificStyles(
+    styleElements: HTMLStyleElement[]
+  ): string[] {
+    const targetStyles: Record<string, string> = {
+      height: "0.1px",
+      overflow: "hidden",
+      position: "fixed",
+      opacity: "0",
+      "text-indent": "-99999px",
+      bottom: "-999px",
+    };
+
+    const foundClassNames: string[] = [];
+
+    for (const styleElement of styleElements) {
+      if (styleElement.tagName === "STYLE") {
+        const styleSheet = styleElement.sheet;
+        if (styleSheet instanceof CSSStyleSheet) {
+          for (const rule of styleSheet.cssRules) {
+            if (rule instanceof CSSStyleRule) {
+              let matchesAllStyles = true;
+              for (const prop in targetStyles) {
+                if (rule.style.getPropertyValue(prop) !== targetStyles[prop]) {
+                  matchesAllStyles = false;
+                  break;
+                }
+              }
+              if (matchesAllStyles) {
+                foundClassNames.push(rule.selectorText);
+              }
+            }
+          }
+        }
+      }
+    }
+    return foundClassNames;
   }
 
   // Helper to parse chapter ID from article ID (kolnovel specific)

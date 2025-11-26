@@ -1,17 +1,15 @@
 import van from "vanjs-core";
+import { Minimize } from "vanjs-lucide";
 
 const { button, div } = van.tags;
 
 const LOCAL_STORAGE_READER_KEY = "readerEnabled";
 
-export const getReaderState = (host: string) =>
-  window.localStorage.getItem(`${LOCAL_STORAGE_READER_KEY}_${host}`) === "true";
+export const getReaderState = () =>
+  window.localStorage.getItem(`${LOCAL_STORAGE_READER_KEY}`) === "true";
 
-export const setReaderState = (host: string, enabled: boolean) =>
-  window.localStorage.setItem(
-    `${LOCAL_STORAGE_READER_KEY}_${host}`,
-    String(enabled)
-  );
+export const setReaderState = (enabled: boolean) =>
+  window.localStorage.setItem(`${LOCAL_STORAGE_READER_KEY}`, String(enabled));
 
 /**
  * Injects a toggle button into the target element.
@@ -25,7 +23,6 @@ export const setReaderState = (host: string, enabled: boolean) =>
 export function injectToggle(
   targetElement: Element,
   initialState: boolean,
-  host: string,
   buttonTextActive: string = "Disable Reader",
   buttonTextInactive: string = "Enable Reader",
   className: string = "reader-toggle-btn"
@@ -44,7 +41,7 @@ export function injectToggle(
         {
           className: className,
           onclick: () => {
-            setReaderState(host, !toggleState.val);
+            setReaderState(!toggleState.val);
             location.reload();
           },
         },
@@ -57,15 +54,14 @@ export function injectToggle(
 }
 
 export function Toggler() {
-  const host = document.body.getAttribute("host")!;
   return button(
     {
-      class: "vbtn destructive",
+      class: "exit-reader-btn",
       onclick: () => {
-        setReaderState(host, false);
+        setReaderState(false);
         location.reload();
       },
     },
-    "Exit Reader"
+    Minimize()
   );
 }

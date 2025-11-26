@@ -157,30 +157,28 @@ async function launchReaderApp() {
 
 export default function main(disabled: boolean) {
   console.clear();
+  if (disabled) {
+    setReaderState(false);
+    const url = new URL(window.location.href);
+    url.search = "";
+    window.history.replaceState({}, document.title, url.toString());
+    return;
+  }
   if (document.querySelector("#Top_Up")) {
-    if (disabled) {
-      setReaderState(HOST_IDENTIFIER, false);
-      const url = new URL(window.location.href);
-      url.search = "";
-      window.history.replaceState({}, document.title, url.toString());
-      return;
-    }
-    const isEnabled = getReaderState(HOST_IDENTIFIER);
+    const isEnabled = getReaderState();
     // Check for a specific element that indicates a reading page (Kolnovel specific)
     if (isEnabled) {
       document.body.setAttribute("host", HOST_IDENTIFIER);
       launchReaderApp();
     } else {
-      const target = document.querySelector(".socialts"); // Kolnovel's existing toggle target
+      const target = document.querySelector("#kol_navbar"); // Kolnovel's existing toggle target
       if (target) {
-        target.innerHTML = "";
         injectToggle(
           target,
           false,
-          HOST_IDENTIFIER,
           "Disable Reader",
           "Enable Reader",
-          "vbtn md default"
+          "start-reader-btn"
         );
       } else {
         console.warn("Kolnovel toggle button target '.socialts' not found.");
