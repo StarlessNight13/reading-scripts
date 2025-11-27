@@ -402,10 +402,10 @@ body {
   top: 0;
   right: 0;
   height: 100vh;
-  width: 300px;
+  width: calc(100vw - 45px);
+  max-width: 300px;
   background: var(--background);
   color: var(--foreground);
-  z-index: 20;
   transform: translateX(100%);
   transition: transform 0.3s ease;
   box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
@@ -421,6 +421,7 @@ body {
     flex: 1;
     padding: 20px;
     overflow-y: auto;
+    z-index: 20;
 
     h2 {
       margin-top: 0;
@@ -537,7 +538,7 @@ body {
     line-height: 40px;
     text-align: center;
     cursor: pointer;
-    z-index: 10001;
+    z-index: 40;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     transition: filter 0.2s ease, transform 0.3s ease;
 
@@ -545,18 +546,22 @@ body {
       filter: contrast(1.2);
     }
   }
+
+  body:has(#van-chapter-panel.open) & {
+    transform: translateX(calc(100% + 45px));
+  }
 }
 
 #van-chapter-panel {
   position: fixed;
   top: 0;
-  left: 0;
+  right: 0;
   height: 100vh;
-  width: 300px;
+  width: calc(100vw - 45px);
+  max-width: 350px;
   background: var(--background);
   color: var(--foreground);
-  z-index: 9999;
-  transform: translateX(-100%);
+  transform: translateX(100%);
   transition: transform 0.3s ease;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
   display: flex;
@@ -568,18 +573,25 @@ body {
   }
   .van-panel-toggle {
     position: absolute;
-    right: -40px;
-    top: 45px;
+    left: -40px;
+    top: 135px;
     width: 40px;
     height: 40px;
-    background: var(--muted);
+    background: var(--primary);
     border: none;
-    color: var(--muted-foreground);
+    color: var(--primary-foreground);
     cursor: pointer;
-    border-radius: 0 4px 4px 0;
+    border-radius: 4px 0 0 4px;
+    z-index: 40;
   }
+
+  body:has(#van-settings-panel.open) & {
+    transform: translateX(calc(100% + 45px));
+  }
+
   .van-volume-list {
     overflow-y: auto;
+    z-index: 20;
     flex: 1;
     padding: 10px;
     .van-volume-header {

@@ -39,9 +39,7 @@ async function launchReaderApp() {
 
   // 1. Prep Environment
   document.body.innerHTML = "";
-  document.body.className = document.body.classList.contains("text-ui-light")
-    ? "dark default"
-    : "light default";
+
   window.scrollTo(0, 0);
 
   // 2. State
@@ -81,6 +79,10 @@ async function launchReaderApp() {
 
   // 4. Render
   van.add(document.body, ReaderView(chapterData, loading));
+  document.body.className = document.body.classList.contains("text-ui-light")
+    ? "dark default"
+    : "light default";
+  document.body.setAttribute("host", HOST_IDENTIFIER);
 
   initSettings();
   initVIewTracker();
@@ -102,7 +104,6 @@ export default function main(disabled: boolean) {
   }
   const isEnabled = getReaderState();
   if (isEnabled) {
-    document.body.setAttribute("host", HOST_IDENTIFIER);
     launchReaderApp();
   } else {
     const target = document.querySelector<HTMLDivElement>("#reader-settings");

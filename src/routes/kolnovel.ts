@@ -99,11 +99,7 @@ async function launchReaderApp() {
 
   // 1. Prep Environment
   document.body.innerHTML = "";
-  document.body.className = document.body.classList.contains("darkmode")
-    ? "dark"
-    : "light";
   window.scrollTo(0, 0);
-  removeBaseStyles();
 
   // 2. State
   const chapterData = van.state(currentChapterData);
@@ -144,6 +140,12 @@ async function launchReaderApp() {
   );
 
   controller.initIndices(); // This will use getInitialGlobalChapterIndex if provided
+  // Set theme and remove base styles
+  document.body.className = document.body.classList.contains("darkmode")
+    ? "dark"
+    : "light";
+  removeBaseStyles();
+  document.body.setAttribute("host", HOST_IDENTIFIER);
 
   // 4. Render
   van.add(document.body, ReaderView(chapterData, loading));
@@ -168,7 +170,6 @@ export default function main(disabled: boolean) {
     const isEnabled = getReaderState();
     // Check for a specific element that indicates a reading page (Kolnovel specific)
     if (isEnabled) {
-      document.body.setAttribute("host", HOST_IDENTIFIER);
       launchReaderApp();
     } else {
       const target = document.querySelector("#kol_navbar"); // Kolnovel's existing toggle target
