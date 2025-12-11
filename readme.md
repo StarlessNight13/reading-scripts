@@ -21,14 +21,6 @@ To use this userscript, you'll need a userscript manager extension installed in 
 
 1.  **Install a Userscript Manager:** If you don't have one already, install a userscript manager extension for your browser from its respective add-on store.
 2.  **Download the Userscript:**
-    - Click on the `reading-enhancer.user.js` file in this repository.
-    - Click the "Raw" button. Your userscript manager should detect the file and prompt you to install it.
-3.  **Confirm Installation:** Follow the prompts from your userscript manager to install the script.
-
-#### OR
-
-1.  **Install a Userscript Manager:** If you don't have one already, install a userscript manager extension for your browser from its respective add-on store.
-2.  **Download the Userscript:**
     - Go to the [Releases](https://github.com/StarlessNight13/reading-scripts/releases) page.
     - Click on the latest release.
     - Click on the `reading-enhancer.user.js` file. Your userscript manager should detect the file and prompt you to install it.
